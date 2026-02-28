@@ -97,6 +97,66 @@ npm run build
 # Deploy via Amplify (auto-deployed on git push if configured)
 ```
 
+## Okta SSO Setup
+
+The dashboard supports Okta OIDC single sign-on. When Okta is not configured, it falls back to local username/password authentication.
+
+### 1. Create an Okta Application
+
+1. Log into your [Okta Admin Console](https://your-org-admin.okta.com/admin/apps/active)
+2. Go to **Applications** → **Create App Integration**
+3. Select:
+   - **Sign-in method**: OIDC – OpenID Connect
+   - **Application type**: Single-Page Application (SPA)
+4. Click **Next**
+
+### 2. Configure the Application
+
+| Setting | Value |
+|---------|-------|
+| **App integration name** | `IAM Governance Dashboard` (or any name) |
+| **Grant type** | ✅ Authorization Code |
+| **Sign-in redirect URIs** | `http://localhost:3000/callback` (dev) |
+| | `https://your-amplify-domain.amplifyapp.com/callback` (prod) |
+| **Sign-out redirect URIs** | `http://localhost:3000` (dev) |
+| | `https://your-amplify-domain.amplifyapp.com` (prod) |
+| **Controlled access** | Choose who can access (e.g., "Allow everyone in your organization") |
+
+5. Click **Save**
+6. On the app's **General** tab, copy the **Client ID**
+
+### 3. Set Environment Variables
+
+Create a `.env` file in the `frontend/` directory:
+
+```bash
+# frontend/.env
+REACT_APP_OKTA_DOMAIN=your-org.okta.com
+REACT_APP_OKTA_CLIENT_ID=0oaXXXXXXXXXXXXXXXXX
+REACT_APP_OKTA_REDIRECT_URI=http://localhost:3000/callback
+```
+
+> **Note:** Your Okta domain is the non-admin URL (e.g., `your-org.okta.com`, not `your-org-admin.okta.com`). You can find it under **Settings** → **Account** in the Okta Admin Console.
+
+### 4. Restart the Dev Server
+
+```bash
+cd frontend
+npm start
+```
+
+The login page will automatically show a **"Sign in with Okta"** button instead of the local username/password form.
+
+### Production Deployment
+
+For Amplify-hosted deployments, set the same environment variables in your Amplify app's **Environment variables** settings, updating the redirect URI to your production URL:
+
+```
+REACT_APP_OKTA_DOMAIN=your-org.okta.com
+REACT_APP_OKTA_CLIENT_ID=0oaXXXXXXXXXXXXXXXXX
+REACT_APP_OKTA_REDIRECT_URI=https://main.d1234abcde.amplifyapp.com/callback
+```
+
 ## Configuration Reference
 
 ### Required Variables
@@ -211,6 +271,8 @@ Contributions are welcome! Please:
 cd frontend
 npm install
 npm start              # Starts React dev server on port 3000
+# Default local login: admin / admin123
+# (When Okta SSO env vars are not configured, local auth is used)
 
 # Backend (Python Lambdas)
 cd backend/worker

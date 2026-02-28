@@ -1,7 +1,22 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './Header.css';
 
-function Header({ user, onRefresh, onExport }) {
+function Header({ user, onRefresh, onLogout }) {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        if (!menuOpen) return;
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [menuOpen]);
+
     return (
         <header className="header" id="app-header">
             {/* AWS top bar */}
@@ -35,16 +50,53 @@ function Header({ user, onRefresh, onExport }) {
                     </button>
 
                     {user && (
-                        <div className="header__user" id="user-info">
-                            <div className="header__avatar">
-                                {(user.name || 'U').charAt(0).toUpperCase()}
-                            </div>
-                            <div className="header__user-info">
-                                <span className="header__user-name">{user.name}</span>
-                                {user.email && (
-                                    <span className="header__user-email">{user.email}</span>
-                                )}
-                            </div>
+                        <div className="header__user-menu" ref={menuRef}>
+                            <button
+                                className="header__user-trigger"
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                id="user-menu-button"
+                                aria-expanded={menuOpen}
+                                aria-haspopup="true"
+                            >
+                                <div className="header__avatar">
+                                    {(user.name || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div className="header__user-info">
+                                    <span className="header__user-name">{user.name}</span>
+                                    {user.email && (
+                                        <span className="header__user-email">{user.email}</span>
+                                    )}
+                                </div>
+                                <svg className={`header__chevron ${menuOpen ? 'header__chevron--open' : ''}`} width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                                    <path d="M2.5 4.5l3.5 3 3.5-3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
+
+                            {menuOpen && (
+                                <div className="header__dropdown" role="menu">
+                                    <div className="header__dropdown-user">
+                                        <div className="header__dropdown-avatar">
+                                            {(user.name || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div className="header__dropdown-name">{user.name}</div>
+                                            {user.email && <div className="header__dropdown-email">{user.email}</div>}
+                                        </div>
+                                    </div>
+                                    <div className="header__dropdown-divider" />
+                                    <button
+                                        className="header__dropdown-item header__dropdown-item--danger"
+                                        onClick={() => { setMenuOpen(false); onLogout(); }}
+                                        role="menuitem"
+                                        id="sign-out-button"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6" />
+                                        </svg>
+                                        Sign out
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

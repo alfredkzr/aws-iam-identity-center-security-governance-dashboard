@@ -1,74 +1,74 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Amplify } from 'aws-amplify';
-import amplifyConfig from './amplify-config';
+import { AuthProvider, useAuth } from './auth/AuthContext';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
-
-// Configure Amplify
-try {
-    Amplify.configure(amplifyConfig);
-} catch (err) {
-    console.warn('Amplify configuration skipped (SSO not configured):', err.message);
-}
+import LoginPage from './components/LoginPage';
 
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT || '';
 
-function App() {
+function AppContent() {
+    const { user, isAuthenticated, loading: authLoading, logout, handleOktaCallback } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [user, setUser] = useState(null);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
 
         try {
-            // Try the Athena Proxy Lambda function URL
             if (API_ENDPOINT) {
                 const response = await fetch(`${API_ENDPOINT}?type=all`);
                 if (!response.ok) throw new Error(`API returned ${response.status}`);
                 const result = await response.json();
                 setData(result);
             } else {
-                // Demo mode with sample data when no API is configured
                 setData(getDemoData());
             }
         } catch (err) {
             console.error('Failed to fetch data:', err);
             setError(err.message);
-            // Fall back to demo data
             setData(getDemoData());
         } finally {
             setLoading(false);
         }
     }, []);
 
+    // Handle OIDC callback
     useEffect(() => {
-        fetchData();
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('code')) {
+            handleOktaCallback();
+        }
+    }, [handleOktaCallback]);
 
-        // Try to get current user from Amplify
-        const checkUser = async () => {
-            try {
-                const { fetchAuthSession } = await import('aws-amplify/auth');
-                const session = await fetchAuthSession();
-                if (session?.tokens) {
-                    setUser({
-                        name: session.tokens.idToken?.payload?.name || 'SSO User',
-                        email: session.tokens.idToken?.payload?.email || '',
-                    });
-                }
-            } catch {
-                // Not signed in or SSO not configured — that's fine
-                setUser({ name: 'Demo User', email: 'demo@example.com' });
-            }
-        };
-        checkUser();
-    }, [fetchData]);
+    // Fetch data once authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchData();
+        }
+    }, [isAuthenticated, fetchData]);
+
+    // Show loading while auth is initializing
+    if (authLoading) {
+        return (
+            <div className="app" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f2f3f3' }}>
+                <div style={{ textAlign: 'center', color: '#687078' }}>
+                    <div className="loading-spinner" style={{ width: 32, height: 32, border: '3px solid #eaeded', borderTop: '3px solid #0073bb', borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 600ms linear infinite' }} />
+                    Authenticating…
+                </div>
+            </div>
+        );
+    }
+
+    // Show login page if not authenticated
+    if (!isAuthenticated) {
+        return <LoginPage />;
+    }
 
     return (
         <div className="app">
-            <Header user={user} onRefresh={fetchData} />
+            <Header user={user} onRefresh={fetchData} onLogout={logout} />
             <main className="main-content">
                 <Dashboard data={data} loading={loading} error={error} />
             </main>
@@ -76,9 +76,16 @@ function App() {
     );
 }
 
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
+    );
+}
+
 /**
  * Demo data for when the API is not configured.
- * This allows the frontend to render with realistic sample data.
  */
 function getDemoData() {
     return {
