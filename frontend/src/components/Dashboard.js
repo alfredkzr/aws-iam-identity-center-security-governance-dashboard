@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import './Dashboard.css';
 import GovernanceCharts from './GovernanceCharts';
 
-function Dashboard({ data, loading, error }) {
+function Dashboard({ data, loading, error, availableDates = [], selectedDate, onDateChange }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [sortField, setSortField] = useState('account_name');
@@ -191,6 +191,23 @@ function Dashboard({ data, loading, error }) {
                     <span className="toolbar__count">
                         {filteredAssignments.length} result{filteredAssignments.length !== 1 ? 's' : ''}
                     </span>
+
+                    {/* Snapshot Date Selector */}
+                    {availableDates.length > 0 && (
+                        <div className="toolbar__snapshot-selector">
+                            <label htmlFor="snapshot-date" className="toolbar__snapshot-label">Snapshot:</label>
+                            <select
+                                id="snapshot-date"
+                                className="toolbar__snapshot-select"
+                                value={selectedDate}
+                                onChange={(e) => onDateChange(e.target.value)}
+                            >
+                                {availableDates.map(date => (
+                                    <option key={date} value={date}>{date}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     {data?.generated_at && (
                         <span className="toolbar__timestamp">

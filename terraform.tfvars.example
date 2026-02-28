@@ -44,6 +44,11 @@ identity_store_id = "d-xxxxxxxxxx"
 # CloudWatch Logs retention in days (default: 7)
 # log_retention_days = 14
 
+# S3 Object Lifecycle Expiration in days (default: 7 for inventory, 1 for results/cache)
+# inventory_lifecycle_days      = 7
+# athena_results_lifecycle_days = 1
+# cache_lifecycle_days          = 1
+
 # Max concurrent Lambda invocations (prevents runaway costs)
 # worker_reserved_concurrency      = 10
 # athena_proxy_reserved_concurrency = 5

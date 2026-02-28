@@ -325,6 +325,41 @@
     white-space: nowrap;
 }
 
+/* ---- Snapshot Selector ---- */
+
+.toolbar__snapshot-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    background: var(--bg-page);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-m);
+    padding: 0 10px;
+    height: 32px;
+}
+
+.toolbar__snapshot-label {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.toolbar__snapshot-select {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: var(--font-sm);
+    font-family: var(--font-family);
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    padding-right: 4px;
+}
+
+.toolbar__snapshot-select:focus {
+    color: var(--aws-blue);
+}
+
 /* ---- Export Dropdown ---- */
 
 .export-dropdown {

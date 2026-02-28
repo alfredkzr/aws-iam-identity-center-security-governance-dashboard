@@ -320,7 +320,8 @@ def write_csv_to_s3(account_id, assignments):
     writer.writeheader()
     writer.writerows(assignments)
 
-    key = f"assignments/{account_id}.csv"
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    key = f"assignments/snapshot_date={today}/{account_id}.csv"
     s3.put_object(
         Bucket=INVENTORY_BUCKET,
         Key=key,

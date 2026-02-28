@@ -29,6 +29,18 @@ resource "aws_glue_catalog_table" "assignments" {
   parameters = {
     "classification"  = "csv"
     "skip.header.line.count" = "1"
+    "projection.enabled" = "true"
+    "projection.snapshot_date.type" = "date"
+    "projection.snapshot_date.format" = "yyyy-MM-dd"
+    "projection.snapshot_date.range" = "2024-01-01,NOW"
+    "projection.snapshot_date.interval" = "1"
+    "projection.snapshot_date.interval.unit" = "DAYS"
+    "storage.location.template" = "s3://${aws_s3_bucket.inventory.id}/assignments/snapshot_date=$${snapshot_date}/"
+  }
+
+  partition_keys {
+    name = "snapshot_date"
+    type = "string"
   }
 
   storage_descriptor {

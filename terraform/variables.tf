@@ -76,6 +76,24 @@ variable "lambda_url_auth_type" {
 # Cost & Performance Guardrails
 # -----------------------------------------------------------------------------
 
+variable "inventory_lifecycle_days" {
+  description = "Number of days before raw CSV assignments in S3 are deleted."
+  type        = number
+  default     = 7
+}
+
+variable "athena_results_lifecycle_days" {
+  description = "Number of days before Athena query results in S3 are deleted."
+  type        = number
+  default     = 1
+}
+
+variable "cache_lifecycle_days" {
+  description = "Number of days before fast-load cache JSONs in S3 are deleted."
+  type        = number
+  default     = 1
+}
+
 variable "log_retention_days" {
   description = "CloudWatch Logs retention period in days"
   type        = number

@@ -33,7 +33,7 @@ CACHE_KEY = "summary.json"
 CACHE_MAX_AGE_SECONDS = 3600  # 1 hour
 
 # Valid query types — allowlist to prevent abuse
-VALID_QUERY_TYPES = {"all", "summary"}
+VALID_QUERY_TYPES = {"all", "summary", "dates"}
 
 # Validate table name at cold-start to prevent SQL injection
 _TABLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
@@ -61,19 +61,28 @@ def lambda_handler(event, context):
             logger.warning(f"Invalid query_type received: {query_type}")
             return _response(400, {"error": f"Invalid query type. Must be one of: {', '.join(VALID_QUERY_TYPES)}"})
 
+        # Fast path: list available dates quickly directly from S3
+        if query_type == "dates":
+            dates = _get_available_dates()
+            return _response(200, {"dates": dates})
+
+        # Extract snapshot date (if provided)
+        snapshot_date = _get_snapshot_date(event)
+        logger.info(f"Target snapshot_date={snapshot_date}")
+
         # Fast path: check cache first
-        cached = _get_cached_summary()
+        cached = _get_cached_summary(snapshot_date)
         if cached is not None:
             logger.info("Cache hit — returning cached summary")
             return _response(200, cached)
 
         # Slow path: run Athena query
         logger.info("Cache miss — running Athena query")
-        results = _run_athena_query(query_type)
+        results = _run_athena_query(query_type, snapshot_date)
 
         # Build summary and cache it
-        summary = _build_summary(results)
-        _put_cached_summary(summary)
+        summary = _build_summary(results, snapshot_date)
+        _put_cached_summary(summary, snapshot_date)
 
         return _response(200, summary)
 
@@ -85,10 +94,16 @@ def lambda_handler(event, context):
 # ---------------------------------------------------------------------------
 # Cache Layer
 # ---------------------------------------------------------------------------
-def _get_cached_summary():
+def _get_cache_key(snapshot_date):
+    if snapshot_date:
+        return f"summary_{snapshot_date}.json"
+    return CACHE_KEY
+
+def _get_cached_summary(snapshot_date=None):
     """Try to load summary.json from cache bucket. Returns None if stale or missing."""
+    key = _get_cache_key(snapshot_date)
     try:
-        response = s3.get_object(Bucket=CACHE_BUCKET, Key=CACHE_KEY)
+        response = s3.get_object(Bucket=CACHE_BUCKET, Key=key)
         last_modified = response["LastModified"]
         age = (datetime.now(timezone.utc) - last_modified).total_seconds()
 
@@ -107,12 +122,13 @@ def _get_cached_summary():
         return None
 
 
-def _put_cached_summary(summary):
+def _put_cached_summary(summary, snapshot_date=None):
     """Write summary.json to cache bucket."""
+    key = _get_cache_key(snapshot_date)
     try:
         s3.put_object(
             Bucket=CACHE_BUCKET,
-            Key=CACHE_KEY,
+            Key=key,
             Body=json.dumps(summary, default=str).encode("utf-8"),
             ContentType="application/json",
         )
@@ -124,9 +140,9 @@ def _put_cached_summary(summary):
 # ---------------------------------------------------------------------------
 # Athena Query Lifecycle
 # ---------------------------------------------------------------------------
-def _run_athena_query(query_type="all"):
+def _run_athena_query(query_type="all", snapshot_date=None):
     """Execute an Athena query and return the results."""
-    sql = _get_query_sql(query_type)
+    sql = _get_query_sql(query_type, snapshot_date)
 
     # Start query execution
     start_response = athena.start_query_execution(
@@ -198,8 +214,10 @@ def _fetch_results(query_execution_id):
 # ---------------------------------------------------------------------------
 # Query Builder
 # ---------------------------------------------------------------------------
-def _get_query_sql(query_type):
+def _get_query_sql(query_type, snapshot_date):
     """Return the SQL query for the given type. Table name is validated at cold-start."""
+    date_filter = f"WHERE snapshot_date = '{snapshot_date}'" if snapshot_date else ""
+
     if query_type == "summary":
         return f"""
             SELECT
@@ -209,6 +227,7 @@ def _get_query_sql(query_type):
                 COUNT(DISTINCT principal_name) as unique_principals,
                 COUNT(DISTINCT permission_set_name) as unique_permission_sets
             FROM {ATHENA_TABLE}
+            {date_filter}
             GROUP BY account_id, account_name
             ORDER BY total_assignments DESC
         """
@@ -224,6 +243,7 @@ def _get_query_sql(query_type):
                 permission_set_arn,
                 group_name
             FROM {ATHENA_TABLE}
+            {date_filter}
             ORDER BY account_name, principal_name
         """
 
@@ -231,7 +251,7 @@ def _get_query_sql(query_type):
 # ---------------------------------------------------------------------------
 # Summary Builder
 # ---------------------------------------------------------------------------
-def _build_summary(rows):
+def _build_summary(rows, snapshot_date=None):
     """Build a summary object from query results."""
     accounts = set()
     principals = set()
@@ -244,6 +264,7 @@ def _build_summary(rows):
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "snapshot_date": snapshot_date,
         "stats": {
             "total_assignments": len(rows),
             "total_accounts": len(accounts),
@@ -259,10 +280,39 @@ def _build_summary(rows):
 # ---------------------------------------------------------------------------
 def _get_query_type(event):
     """Extract query type from Lambda Function URL event."""
-    # Function URL passes query string params
     params = event.get("queryStringParameters") or {}
     return params.get("type", "all")
 
+def _get_snapshot_date(event):
+    """Extract requested snapshot date, sanitize it to YYYY-MM-DD."""
+    params = event.get("queryStringParameters") or {}
+    date_str = params.get("date")
+    if date_str and re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        return date_str
+    return None
+
+def _get_available_dates():
+    """List out snapshot dates directly from S3 by finding common prefixes."""
+    try:
+        response = s3.list_objects_v2(
+            Bucket=INVENTORY_BUCKET,
+            Prefix="assignments/snapshot_date=",
+            Delimiter="/"
+        )
+        prefixes = response.get("CommonPrefixes", [])
+        
+        dates = []
+        for prefix in prefixes:
+            # prefix is like "assignments/snapshot_date=2024-03-01/"
+            match = re.search(r"snapshot_date=(\d{4}-\d{2}-\d{2})", prefix["Prefix"])
+            if match:
+                dates.append(match.group(1))
+        
+        # Return sorted descending (newest first)
+        return sorted(dates, reverse=True)
+    except Exception as exc:
+        logger.error(f"Failed to fetch dates from S3: {exc}")
+        return []
 
 def _cors_origin(event):
     """Determine the CORS origin to return based on the request and allowed origins."""
