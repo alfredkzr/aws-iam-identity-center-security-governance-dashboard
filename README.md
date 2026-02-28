@@ -6,8 +6,6 @@ An open-source, serverless governance dashboard that audits AWS IAM Identity Cen
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
-![Dashboard](docs/screenshots/dashboard-2.jpg)
-
 ## Architecture
 
 ```
@@ -66,24 +64,23 @@ The IAM principal running `terraform apply` needs permissions for:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/aws-iam-identity-center-governance-dashboard.git
+git clone https://github.com/alfredkzr/aws-iam-identity-center-governance-dashboard.git
 cd aws-iam-identity-center-governance-dashboard
 ```
 
 ### 2. Configure Variables
 
 ```bash
-cp terraform.tfvars.example terraform.tfvars
+cp terraform.tfvars.example terraform/terraform.tfvars
 ```
 
-Edit `terraform.tfvars` with your values. At minimum, set:
+Edit `terraform/terraform.tfvars` with your values. At minimum, set:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `resource_prefix` | Unique prefix for all resources | `myorg-idc-gov` |
 | `sso_instance_arn` | ARN of your IAM Identity Center instance | `arn:aws:sso:::instance/ssoins-xxxxxxxx` |
 | `identity_store_id` | Identity Store ID | `d-xxxxxxxxxx` |
-| `org_management_account_id` | AWS Organization management account ID | `123456789012` |
 
 ### 3. Deploy Infrastructure
 
@@ -94,14 +91,35 @@ terraform plan    # Review the changes
 terraform apply
 ```
 
-### 4. Build & Deploy Frontend
+Terraform will output the `athena_proxy_url` and `amplify_default_domain` — you'll need these for the next steps.
+
+### 4. Deploy Frontend
+
+**Option A: GitHub Auto-Deploy (Recommended)**
+
+If you set `github_repository` and `github_oauth_token` in your tfvars, Amplify will automatically build and deploy on every push to `main`. See [GitHub Token Setup](#github-token-setup) below.
+
+**Option B: Manual Deploy**
+
+If you didn't connect GitHub, deploy manually via the Amplify console:
 
 ```bash
 cd frontend
 npm install
 npm run build
-# Deploy via Amplify (auto-deployed on git push if configured)
+# Then upload the build/ folder via the Amplify Console → Deploy without Git provider
 ```
+
+### 5. Run the Initial Crawl
+
+After deployment, trigger the Step Functions state machine to perform the first crawl:
+
+```bash
+aws stepfunctions start-execution \
+  --state-machine-arn $(terraform -chdir=terraform output -raw step_functions_arn)
+```
+
+The dashboard will populate with data once the crawl completes (typically 1–3 minutes).
 
 ## Okta SSO Setup
 
@@ -155,13 +173,38 @@ The login page will automatically show a **"Sign in with Okta"** button instead 
 
 ### Production Deployment
 
-For Amplify-hosted deployments, set the same environment variables in your Amplify app's **Environment variables** settings, updating the redirect URI to your production URL:
+For Amplify-hosted deployments, set the Okta variables in your `terraform.tfvars` — Terraform will pass them to Amplify as environment variables automatically. Make sure to update the redirect URI to your Amplify domain:
 
+```hcl
+# In terraform/terraform.tfvars
+okta_domain       = "your-org.okta.com"
+okta_client_id    = "0oaXXXXXXXXXXXXXXXXX"
+okta_redirect_uri = "https://main.d1234abcde.amplifyapp.com/callback"
 ```
-REACT_APP_OKTA_DOMAIN=your-org.okta.com
-REACT_APP_OKTA_CLIENT_ID=0oaXXXXXXXXXXXXXXXXX
-REACT_APP_OKTA_REDIRECT_URI=https://main.d1234abcde.amplifyapp.com/callback
+
+Also add the production callback URL to your Okta app's **Sign-in redirect URIs**.
+
+## GitHub Token Setup
+
+If you want Amplify to auto-deploy from GitHub, you need a **GitHub Personal Access Token (classic)**:
+
+1. Go to [GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)](https://github.com/settings/tokens)
+2. Click **Generate new token (classic)**
+3. Set a descriptive **Note** (e.g., `amplify-idc-dashboard`)
+4. Set **Expiration** as needed
+5. Select these scopes:
+   - ✅ `repo` (Full control of private repositories)
+   - ✅ `admin:repo_hook` (manage webhooks — needed for auto-deploy triggers)
+6. Click **Generate token** and copy the value immediately (you won't see it again)
+7. Add it to your tfvars:
+
+```hcl
+# In terraform/terraform.tfvars
+github_repository  = "https://github.com/your-org/aws-iam-identity-center-governance-dashboard"
+github_oauth_token = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
+
+> **Note:** With this setup, Terraform handles the full Amplify ↔ GitHub connection. You do **not** need to manually connect GitHub in the Amplify Console — Terraform does it for you via the OAuth token.
 
 ## Configuration Reference
 
@@ -169,10 +212,9 @@ REACT_APP_OKTA_REDIRECT_URI=https://main.d1234abcde.amplifyapp.com/callback
 
 | Variable | Type | Description |
 |----------|------|-------------|
-| `resource_prefix` | `string` | Prefix for all resource names (must be globally unique) |
+| `resource_prefix` | `string` | Prefix for all resource names (must be globally unique for S3) |
 | `sso_instance_arn` | `string` | ARN of your IAM Identity Center instance |
 | `identity_store_id` | `string` | Identity Store ID |
-| `org_management_account_id` | `string` | AWS Organization management account ID |
 
 ### Security Variables
 
@@ -198,9 +240,10 @@ REACT_APP_OKTA_REDIRECT_URI=https://main.d1234abcde.amplifyapp.com/callback
 | `project_name` | `string` | `idc-governance` | Tag value for resource identification |
 | `environment` | `string` | `production` | Tag value for environment |
 | `github_repository` | `string` | `""` | GitHub repo URL for Amplify auto-deploy |
-| `github_oauth_token` | `string` | `""` | GitHub PAT for Amplify (sensitive) |
-| `sso_oidc_issuer_url` | `string` | `""` | OIDC issuer URL for frontend auth |
-| `sso_oidc_client_id` | `string` | `""` | OIDC client ID for frontend auth |
+| `github_oauth_token` | `string` | `""` | GitHub PAT for Amplify ([setup guide](#github-token-setup)) |
+| `okta_domain` | `string` | `""` | Okta domain for SSO (e.g., `your-org.okta.com`) |
+| `okta_client_id` | `string` | `""` | Okta OIDC application client ID |
+| `okta_redirect_uri` | `string` | `""` | OAuth2 redirect URI for the frontend app |
 
 ## Project Structure
 

@@ -44,10 +44,6 @@ variable "identity_store_id" {
   type        = string
 }
 
-variable "org_management_account_id" {
-  description = "AWS Organization management account ID"
-  type        = string
-}
 
 # -----------------------------------------------------------------------------
 # Security Configuration
@@ -116,17 +112,23 @@ variable "github_oauth_token" {
 }
 
 # -----------------------------------------------------------------------------
-# SSO OIDC Configuration (for frontend auth)
+# Okta SSO Configuration (for frontend auth)
 # -----------------------------------------------------------------------------
 
-variable "sso_oidc_issuer_url" {
-  description = "OIDC issuer URL from IAM Identity Center (e.g. https://identitycenter.amazonaws.com/ssoins-xxxxxxxx)"
+variable "okta_domain" {
+  description = "Okta domain for SSO authentication (e.g. your-org.okta.com)"
   type        = string
   default     = ""
 }
 
-variable "sso_oidc_client_id" {
-  description = "OIDC client/application ID registered in IAM Identity Center"
+variable "okta_client_id" {
+  description = "Okta OIDC application/client ID"
+  type        = string
+  default     = ""
+}
+
+variable "okta_redirect_uri" {
+  description = "OAuth2 redirect URI for the frontend app (e.g. https://main.d1234abcde.amplifyapp.com/callback)"
   type        = string
   default     = ""
 }

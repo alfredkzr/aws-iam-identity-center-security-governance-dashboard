@@ -32,10 +32,11 @@ resource "aws_amplify_app" "frontend" {
 
   # Environment variables for the frontend
   environment_variables = {
-    REACT_APP_API_ENDPOINT    = aws_lambda_function_url.athena_proxy.function_url
-    REACT_APP_SSO_ISSUER_URL  = var.sso_oidc_issuer_url
-    REACT_APP_SSO_CLIENT_ID   = var.sso_oidc_client_id
-    REACT_APP_AWS_REGION      = var.aws_region
+    REACT_APP_API_ENDPOINT      = aws_lambda_function_url.athena_proxy.function_url
+    REACT_APP_OKTA_DOMAIN       = var.okta_domain
+    REACT_APP_OKTA_CLIENT_ID    = var.okta_client_id
+    REACT_APP_OKTA_REDIRECT_URI = var.okta_redirect_uri
+    REACT_APP_AWS_REGION        = var.aws_region
   }
 
   # Auto branch creation for main

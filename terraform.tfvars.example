@@ -16,8 +16,6 @@ sso_instance_arn = "arn:aws:sso:::instance/ssoins-xxxxxxxx"
 # Find it: AWS Console → IAM Identity Center → Settings → Identity source
 identity_store_id = "d-xxxxxxxxxx"
 
-# AWS Organization management account ID
-org_management_account_id = "123456789012"
 
 # -------------------------------------------------------
 # OPTIONAL — Security (defaults are safe for demo use)
@@ -61,8 +59,9 @@ org_management_account_id = "123456789012"
 # github_oauth_token = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # -------------------------------------------------------
-# OPTIONAL — SSO OIDC (frontend authentication)
+# OPTIONAL — Okta SSO (frontend authentication)
 # -------------------------------------------------------
 
-# sso_oidc_issuer_url = "https://identitycenter.amazonaws.com/ssoins-xxxxxxxx"
-# sso_oidc_client_id  = "your-oidc-client-id"
+# okta_domain       = "your-org.okta.com"
+# okta_client_id    = "0oaXXXXXXXXXXXXXXXX"
+# okta_redirect_uri = "https://main.d1234abcde.amplifyapp.com/callback"
