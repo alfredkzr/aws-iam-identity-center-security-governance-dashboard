@@ -2,6 +2,14 @@
 
 An open-source, serverless governance dashboard that audits AWS IAM Identity Center (SSO) permission assignments across your entire AWS Organization.
 
+## Screenshots
+
+### Login Page (Okta SSO)
+![Login Page](docs/screenshots/login.png)
+
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
+
 ## Architecture
 
 ```
