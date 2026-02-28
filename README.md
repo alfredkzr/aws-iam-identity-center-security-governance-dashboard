@@ -4,11 +4,9 @@ An open-source, serverless governance dashboard that audits AWS IAM Identity Cen
 
 ## Screenshots
 
-### Login Page (Okta SSO)
-![Login Page](docs/screenshots/login.png)
-
-### Dashboard
 ![Dashboard](docs/screenshots/dashboard.png)
+
+![Dashboard](docs/screenshots/dashboard-2.png)
 
 ## Architecture
 
