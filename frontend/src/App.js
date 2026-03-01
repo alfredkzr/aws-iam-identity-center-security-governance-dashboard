@@ -14,28 +14,26 @@ function AppContent() {
     const [availableDates, setAvailableDates] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
 
-    const fetchData = useCallback(async (dateToFetch = null) => {
+    const fetchData = useCallback(async (dateToFetch = null, force = false) => {
         setLoading(true);
         setError(null);
 
         try {
             if (API_ENDPOINT) {
-                // Fetch available dates first if we don't have them
-                let dates = availableDates;
-                if (dates.length === 0) {
-                    const datesResponse = await fetch(`${API_ENDPOINT}?type=dates`);
-                    if (datesResponse.ok) {
-                        const datesResult = await datesResponse.json();
-                        dates = datesResult.dates || [];
-                        setAvailableDates(dates);
-                    }
+                // Always fetch latest available dates
+                const datesResponse = await fetch(`${API_ENDPOINT}?type=dates${force ? '&force=true' : ''}`);
+                let dates = [];
+                if (datesResponse.ok) {
+                    const datesResult = await datesResponse.json();
+                    dates = datesResult.dates || [];
+                    setAvailableDates(dates);
                 }
 
                 // Determine which date to query
                 const targetDate = dateToFetch || (dates.length > 0 ? dates[0] : '');
 
                 // Fetch assignments for target date
-                const url = `${API_ENDPOINT}?type=all${targetDate ? `&date=${targetDate}` : ''}`;
+                const url = `${API_ENDPOINT}?type=all${targetDate ? `&date=${targetDate}` : ''}${force ? '&force=true' : ''}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`API returned ${response.status}`);
                 const result = await response.json();
@@ -48,10 +46,7 @@ function AppContent() {
                 // Fallback to demo data handling
                 const demoInfo = getDemoData();
                 const dates = demoInfo.availableDates;
-
-                if (availableDates.length === 0) {
-                    setAvailableDates(dates);
-                }
+                setAvailableDates(dates);
 
                 const targetDate = dateToFetch || dates[0];
                 setData(demoInfo.dataByDate[targetDate]);
@@ -126,7 +121,7 @@ function AppContent() {
                     availableDates={availableDates}
                     selectedDate={selectedDate}
                     onDateChange={(newDate) => fetchData(newDate)}
-                    onRefresh={() => fetchData(selectedDate)}
+                    onRefresh={() => fetchData(selectedDate, true)}
                 />
             </main>
         </div>

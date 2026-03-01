@@ -70,14 +70,21 @@ def lambda_handler(event, context):
         snapshot_date = _get_snapshot_date(event)
         logger.info(f"Target snapshot_date={snapshot_date}")
 
-        # Fast path: check cache first
-        cached = _get_cached_summary(snapshot_date)
-        if cached is not None:
-            logger.info("Cache hit — returning cached summary")
-            return _response(200, cached)
+        # Check for force refresh parameter
+        force_refresh = _is_force_refresh(event)
+        logger.info(f"force_refresh={force_refresh}")
+
+        # Fast path: check cache first (skip if force_refresh is True)
+        if not force_refresh:
+            cached = _get_cached_summary(snapshot_date)
+            if cached is not None:
+                logger.info("Cache hit — returning cached summary")
+                return _response(200, cached)
+        else:
+            logger.info("Force refresh requested — bypassing cache")
 
         # Slow path: run Athena query
-        logger.info("Cache miss — running Athena query")
+        logger.info("Cache miss or force refresh — running Athena query")
         results = _run_athena_query(query_type, snapshot_date)
 
         # Build summary and cache it
@@ -290,6 +297,11 @@ def _get_snapshot_date(event):
     if date_str and re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         return date_str
     return None
+
+def _is_force_refresh(event):
+    """Check if force refresh is requested via query parameter."""
+    params = event.get("queryStringParameters") or {}
+    return params.get("force", "").lower() == "true"
 
 def _get_available_dates():
     """List out snapshot dates directly from S3 by finding common prefixes."""
