@@ -3,43 +3,8 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import LoginPage from './components/LoginPage';
-import { Amplify } from 'aws-amplify';
-import { get } from 'aws-amplify/api';
 
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT || '';
-const AWS_REGION = process.env.REACT_APP_AWS_REGION || 'ap-southeast-1';
-const IDENTITY_POOL_ID = process.env.REACT_APP_IDENTITY_POOL_ID || '';
-const OKTA_DOMAIN = process.env.REACT_APP_OKTA_DOMAIN || '';
-
-// Configure Amplify for SigV4 signing with Cognito Identity Pool federated via Okta
-if (IDENTITY_POOL_ID) {
-    Amplify.configure({
-        Auth: {
-            Cognito: {
-                identityPoolId: IDENTITY_POOL_ID,
-                allowGuestAccess: false,
-                loginWith: {
-                    oauth: {
-                        domain: OKTA_DOMAIN,
-                        providers: ['OIDC'],
-                        scopes: ['openid', 'profile', 'email'],
-                        responseType: 'code',
-                        redirectSignIn: [window.location.origin + '/'],
-                        redirectSignOut: [window.location.origin + '/'],
-                    }
-                }
-            }
-        },
-        API: {
-            REST: {
-                governance: {
-                    endpoint: API_ENDPOINT.endsWith('/') ? API_ENDPOINT.slice(0, -1) : API_ENDPOINT,
-                    region: AWS_REGION
-                }
-            }
-        }
-    });
-}
 
 function AppContent() {
     const { user, isAuthenticated, loading: authLoading, logout, handleOktaCallback } = useAuth();
@@ -58,21 +23,11 @@ function AppContent() {
                 // Fetch available dates first if we don't have them
                 let dates = availableDates;
                 if (dates.length === 0) {
-                    try {
-                        const restOperation = get({
-                            apiName: 'governance',
-                            path: '/',
-                            options: {
-                                queryParams: { type: 'dates' }
-                            }
-                        });
-                        const { body } = await restOperation.response;
-                        const datesResult = await body.json();
+                    const datesResponse = await fetch(`${API_ENDPOINT}?type=dates`);
+                    if (datesResponse.ok) {
+                        const datesResult = await datesResponse.json();
                         dates = datesResult.dates || [];
                         setAvailableDates(dates);
-                    } catch (err) {
-                        console.error('Failed to fetch dates:', err);
-                        // Fallback or handle error
                     }
                 }
 
@@ -80,19 +35,10 @@ function AppContent() {
                 const targetDate = dateToFetch || (dates.length > 0 ? dates[0] : '');
 
                 // Fetch assignments for target date
-                const queryParams = { type: 'all' };
-                if (targetDate) queryParams.date = targetDate;
-
-                const restOperation = get({
-                    apiName: 'governance',
-                    path: '/',
-                    options: {
-                        queryParams
-                    }
-                });
-
-                const { body } = await restOperation.response;
-                const result = await body.json();
+                const url = `${API_ENDPOINT}?type=all${targetDate ? `&date=${targetDate}` : ''}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`API returned ${response.status}`);
+                const result = await response.json();
 
                 setData(result);
                 if (targetDate && targetDate !== selectedDate) {

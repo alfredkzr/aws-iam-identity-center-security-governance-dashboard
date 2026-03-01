@@ -56,8 +56,3 @@ output "aws_region" {
   description = "AWS region deployed to"
   value       = var.aws_region
 }
-
-output "cognito_identity_pool_id" {
-  description = "ID of the Cognito Identity Pool"
-  value       = aws_cognito_identity_pool.federated.id
-}

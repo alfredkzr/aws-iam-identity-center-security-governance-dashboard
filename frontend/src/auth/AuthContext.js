@@ -10,8 +10,6 @@ const REDIRECT_URI = (process.env.REACT_APP_OKTA_REDIRECT_URI && !process.env.RE
     ? process.env.REACT_APP_OKTA_REDIRECT_URI
     : `${window.location.origin}/callback`;
 const OKTA_ENABLED = Boolean(OKTA_DOMAIN && OKTA_CLIENT_ID);
-const AWS_REGION = process.env.REACT_APP_AWS_REGION || 'ap-southeast-1';
-const IDENTITY_POOL_ID = process.env.REACT_APP_IDENTITY_POOL_ID || '';
 
 
 // Local fallback credentials (when Okta is not configured)
@@ -159,22 +157,6 @@ export function AuthProvider({ children }) {
             sessionStorage.removeItem('okta_code_verifier');
 
             console.log('Okta token exchange successful');
-
-            // Link Okta session to Amplify for AWS credentials
-            if (IDENTITY_POOL_ID) {
-                try {
-                    // Import federate dynamically to avoid build issues if it's missing in some versions
-                    const { federate } = await import('aws-amplify/auth');
-                    await federate({
-                        providerName: `integrator-2885862.okta.com/oauth2/default`,
-                        token: tokens.id_token
-                    });
-                    console.log('Federation to AWS successful');
-                } catch (credErr) {
-                    console.error('Failed to federate tokens to AWS:', credErr);
-                }
-            }
-
             setUser(userData);
             setLoading(false);
 
