@@ -89,6 +89,7 @@ cd terraform
 terraform init
 terraform plan    # Review the changes
 terraform apply
+cd ..
 ```
 
 Terraform will output the `athena_proxy_url` and `amplify_default_domain` — you'll need these for the next steps.
@@ -106,8 +107,10 @@ If you didn't connect GitHub, deploy manually via the Amplify console:
 ```bash
 cd frontend
 npm install
+export REACT_APP_API_ENDPOINT=$(terraform -chdir=../terraform output -raw athena_proxy_url)
 npm run build
 # Then upload the build/ folder via the Amplify Console → Deploy without Git provider
+cd ..
 ```
 
 ### 5. Run the Initial Crawl
