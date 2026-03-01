@@ -6,9 +6,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 const OKTA_DOMAIN = process.env.REACT_APP_OKTA_DOMAIN || '';
 const OKTA_CLIENT_ID = process.env.REACT_APP_OKTA_CLIENT_ID || '';
-const REDIRECT_URI = (process.env.REACT_APP_OKTA_REDIRECT_URI && !process.env.REACT_APP_OKTA_REDIRECT_URI.includes('localhost'))
-    ? process.env.REACT_APP_OKTA_REDIRECT_URI
-    : `${window.location.origin}/callback`;
+// Always use the current origin for redirect URI to work correctly in both dev and production
+const getRedirectUri = () => `${window.location.origin}/callback`;
 const OKTA_ENABLED = Boolean(OKTA_DOMAIN && OKTA_CLIENT_ID);
 
 
@@ -130,7 +129,7 @@ export function AuthProvider({ children }) {
                 body: new URLSearchParams({
                     grant_type: 'authorization_code',
                     client_id: OKTA_CLIENT_ID,
-                    redirect_uri: REDIRECT_URI,
+                    redirect_uri: getRedirectUri(),
                     code,
                     code_verifier: codeVerifier,
                 }),
@@ -180,9 +179,10 @@ export function AuthProvider({ children }) {
         sessionStorage.setItem('okta_state', state);
         sessionStorage.setItem('okta_code_verifier', codeVerifier);
 
+        const redirectUri = getRedirectUri();
         const authUrl = new URL(`https://${OKTA_DOMAIN}/oauth2/default/v1/authorize`);
         authUrl.searchParams.set('client_id', OKTA_CLIENT_ID);
-        authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
+        authUrl.searchParams.set('redirect_uri', redirectUri);
         authUrl.searchParams.set('response_type', 'code');
         authUrl.searchParams.set('scope', 'openid profile email');
         authUrl.searchParams.set('state', state);
@@ -192,7 +192,7 @@ export function AuthProvider({ children }) {
         console.log('Starting Okta login...', {
             domain: OKTA_DOMAIN,
             clientId: OKTA_CLIENT_ID,
-            redirectUri: REDIRECT_URI,
+            redirectUri: redirectUri,
             authUrl: authUrl.toString()
         });
 

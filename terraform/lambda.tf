@@ -93,3 +93,24 @@ resource "aws_lambda_function_url" "athena_proxy" {
     max_age       = 3600
   }
 }
+
+# Resource-based policy required for public Function URL (auth_type = NONE).
+# Both permissions are needed — InvokeFunctionUrl alone returns 403 Forbidden.
+resource "aws_lambda_permission" "athena_proxy_url_public" {
+  count = var.lambda_url_auth_type == "NONE" ? 1 : 0
+
+  statement_id           = "AllowPublicFunctionUrlInvoke"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.athena_proxy.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "athena_proxy_invoke_public" {
+  count = var.lambda_url_auth_type == "NONE" ? 1 : 0
+
+  statement_id  = "AllowPublicLambdaInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.athena_proxy.function_name
+  principal     = "*"
+}
