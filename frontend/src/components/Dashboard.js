@@ -1,13 +1,19 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
 import './Dashboard.css';
 import GovernanceCharts from './GovernanceCharts';
 
 function Dashboard({ data, loading, error, availableDates = [], selectedDate, onDateChange, onRefresh }) {
     const [searchQuery, setSearchQuery] = useState('');
+    const deferredSearchQuery = useDeferredValue(searchQuery);
     const [filterType, setFilterType] = useState('all');
     const [sortField, setSortField] = useState('account_name');
     const [sortDirection, setSortDirection] = useState('asc');
     const [exportOpen, setExportOpen] = useState(false);
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(50);
+
     const exportRef = useRef(null);
 
     // Close dropdown on outside click
@@ -35,8 +41,8 @@ function Dashboard({ data, loading, error, availableDates = [], selectedDate, on
             result = result.filter(a => a.principal_type === 'GROUP' || a.principal_type === 'USER_VIA_GROUP');
         }
 
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
+        if (deferredSearchQuery) {
+            const q = deferredSearchQuery.toLowerCase();
             result = result.filter(a =>
                 a.account_name?.toLowerCase().includes(q) ||
                 a.principal_name?.toLowerCase().includes(q) ||
@@ -55,7 +61,19 @@ function Dashboard({ data, loading, error, availableDates = [], selectedDate, on
         });
 
         return result;
-    }, [assignments, filterType, searchQuery, sortField, sortDirection]);
+    }, [assignments, filterType, deferredSearchQuery, sortField, sortDirection]);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [deferredSearchQuery, filterType, sortField, sortDirection]);
+
+    const paginatedAssignments = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+        return filteredAssignments.slice(startIndex, startIndex + pageSize);
+    }, [filteredAssignments, currentPage, pageSize]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredAssignments.length / pageSize));
 
     const handleSort = (field) => {
         if (sortField === field) {
@@ -291,7 +309,7 @@ function Dashboard({ data, loading, error, availableDates = [], selectedDate, on
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredAssignments.map((a, i) => (
+                            {paginatedAssignments.map((a, i) => (
                                 <tr key={`${a.account_id}-${a.principal_id || a.principal_name}-${a.permission_set_arn}-${i}`}
                                     className="dashboard__tr">
                                     <td className="dashboard__td">
@@ -313,7 +331,7 @@ function Dashboard({ data, loading, error, availableDates = [], selectedDate, on
                                     <td className="dashboard__td cell__group">{a.group_name || '—'}</td>
                                 </tr>
                             ))}
-                            {filteredAssignments.length === 0 && (
+                            {paginatedAssignments.length === 0 && (
                                 <tr>
                                     <td colSpan="6" className="dashboard__td dashboard__empty">
                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -327,6 +345,78 @@ function Dashboard({ data, loading, error, availableDates = [], selectedDate, on
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination Controls */}
+                {filteredAssignments.length > 0 && (
+                    <div className="dashboard__pagination">
+                        <div className="pagination__left">
+                            <label htmlFor="page-size">Items per page</label>
+                            <select
+                                id="page-size"
+                                className="pagination__select"
+                                value={pageSize}
+                                onChange={(e) => {
+                                    setPageSize(Number(e.target.value));
+                                }}
+                            >
+                                <option value={10}>10</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                                <option value={500}>500</option>
+                            </select>
+                        </div>
+                        <div className="pagination__right">
+                            <span className="pagination__info">
+                                {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, filteredAssignments.length)} of {filteredAssignments.length}
+                            </span>
+                            <div className="pagination__buttons">
+                                <button
+                                    className="pagination__btn"
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(1)}
+                                    title="First page"
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M12.854 3.146a.5.5 0 00-.708 0l-4.5 4.5a.5.5 0 000 .708l4.5 4.5a.5.5 0 00.708-.708L8.707 8l4.147-4.146a.5.5 0 000-.708z" />
+                                        <path d="M7.854 3.146a.5.5 0 00-.708 0l-4.5 4.5a.5.5 0 000 .708l4.5 4.5a.5.5 0 00.708-.708L4.707 8l4.147-4.146a.5.5 0 000-.708z" />
+                                    </svg>
+                                </button>
+                                <button
+                                    className="pagination__btn"
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(p => p - 1)}
+                                    title="Previous page"
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M10.854 3.146a.5.5 0 00-.708 0l-4.5 4.5a.5.5 0 000 .708l4.5 4.5a.5.5 0 00.708-.708L6.707 8l4.147-4.146a.5.5 0 000-.708z" />
+                                    </svg>
+                                </button>
+                                <span className="pagination__current-page">{currentPage}</span>
+                                <button
+                                    className="pagination__btn"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(p => p + 1)}
+                                    title="Next page"
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M5.146 3.146a.5.5 0 01.708 0l4.5 4.5a.5.5 0 010 .708l-4.5 4.5a.5.5 0 01-.708-.708L9.293 8 5.146 3.854a.5.5 0 010-.708z" />
+                                    </svg>
+                                </button>
+                                <button
+                                    className="pagination__btn"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    title="Last page"
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M3.146 3.146a.5.5 0 01.708 0l4.5 4.5a.5.5 0 010 .708l-4.5 4.5a.5.5 0 01-.708-.708L7.293 8 3.146 3.854a.5.5 0 010-.708z" />
+                                        <path d="M8.146 3.146a.5.5 0 01.708 0l4.5 4.5a.5.5 0 010 .708l-4.5 4.5a.5.5 0 01-.708-.708L12.293 8 8.146 3.854a.5.5 0 010-.708z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </section>
         </div>
     );

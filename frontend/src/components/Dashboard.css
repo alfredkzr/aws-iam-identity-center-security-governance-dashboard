@@ -685,6 +685,95 @@
     color: var(--text-secondary);
 }
 
+/* ---- Pagination ---- */
+
+.dashboard__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-m) var(--space-l);
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-divider);
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+}
+
+.pagination__left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+}
+
+.pagination__select {
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: var(--radius-m);
+    padding: 2px 24px 2px 8px;
+    font-size: var(--font-sm);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    transition: border-color var(--transition-fast);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 3.5L5 6.5L8 3.5' stroke='%23545b64' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+.pagination__select:focus {
+    border-color: var(--border-focus);
+}
+
+.pagination__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-l);
+}
+
+.pagination__info {
+    font-weight: 500;
+}
+
+.pagination__buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-s);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.pagination__btn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-focus);
+}
+
+.pagination__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--bg-page);
+    border-color: transparent;
+}
+
+.pagination__current-page {
+    padding: 0 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-sm);
+}
+
 /* ---- Responsive ---- */
 
 @media (max-width: 768px) {

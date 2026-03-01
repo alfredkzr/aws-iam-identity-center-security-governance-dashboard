@@ -73,6 +73,53 @@
 .chart-panel__header {
     padding: var(--space-l) var(--space-xl);
     border-bottom: 1px solid var(--border-divider);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-m);
+}
+
+.chart-panel__header-text {
+    min-width: 0;
+}
+
+.chart-panel__pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.chart-pagination__info {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.chart-pagination__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-s);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.chart-pagination__btn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-focus);
+}
+
+.chart-pagination__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--bg-page);
+    border-color: transparent;
 }
 
 .chart-panel__title {

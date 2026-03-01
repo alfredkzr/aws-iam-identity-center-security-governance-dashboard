@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import './GovernanceCharts.css';
 
 /* ================================================================
@@ -43,22 +43,58 @@ function GovernanceCharts({ assignments = [], stats = {} }) {
     }, [assignments]);
 
 
+    const [accountPage, setAccountPage] = useState(1);
+    const [permissionPage, setPermissionPage] = useState(1);
+    const pageSize = 10;
+
+    const paginatedAccountData = useMemo(() => {
+        const start = (accountPage - 1) * pageSize;
+        return accountData.slice(start, start + pageSize);
+    }, [accountData, accountPage]);
+
+    const paginatedPermissionData = useMemo(() => {
+        const start = (permissionPage - 1) * pageSize;
+        return permissionData.slice(start, start + pageSize);
+    }, [permissionData, permissionPage]);
+
+    const accountTotalPages = Math.max(1, Math.ceil(accountData.length / pageSize));
+    const permissionTotalPages = Math.max(1, Math.ceil(permissionData.length / pageSize));
+
+    const accountMax = accountData.length > 0 ? accountData[0].count : 1;
+    const permissionMax = permissionData.length > 0 ? permissionData[0].count : 1;
+
     if (assignments.length === 0) return null;
 
     return (
         <section className="charts-grid" id="governance-charts">
-            <ChartPanel title="Assignments by Account" subtitle="Distribution across AWS accounts">
-                <HorizontalBarChart data={accountData} colors={ACCOUNT_COLORS} />
+            <ChartPanel
+                title="Assignments by Account"
+                subtitle="Distribution across AWS accounts"
+                page={accountPage}
+                totalPages={accountTotalPages}
+                onPrev={() => setAccountPage(p => p - 1)}
+                onNext={() => setAccountPage(p => p + 1)}
+            >
+                <HorizontalBarChart data={paginatedAccountData} colors={ACCOUNT_COLORS} maxTotal={accountMax} />
             </ChartPanel>
 
-            <ChartPanel title="Permission Set Usage" subtitle="Assignment count per permission set">
-                <HorizontalBarChart data={permissionData} colors={PS_COLORS} />
+            <ChartPanel
+                title="Permission Set Usage"
+                subtitle="Assignment count per permission set"
+                page={permissionPage}
+                totalPages={permissionTotalPages}
+                onPrev={() => setPermissionPage(p => p - 1)}
+                onNext={() => setPermissionPage(p => p + 1)}
+            >
+                <HorizontalBarChart data={paginatedPermissionData} colors={PS_COLORS} maxTotal={permissionMax} />
             </ChartPanel>
 
             <div className="chart-panel chart-panel--wide">
                 <div className="chart-panel__header">
-                    <h3 className="chart-panel__title">Access Heatmap</h3>
-                    <p className="chart-panel__subtitle">Principals per account × permission set</p>
+                    <div className="chart-panel__header-text">
+                        <h3 className="chart-panel__title">Access Heatmap</h3>
+                        <p className="chart-panel__subtitle">Principals per account × permission set</p>
+                    </div>
                 </div>
                 <div className="chart-panel__body">
                     <AccessHeatmap assignments={assignments} />
@@ -71,12 +107,25 @@ function GovernanceCharts({ assignments = [], stats = {} }) {
 /* ================================================================
    ChartPanel — reusable card wrapper
    ================================================================ */
-function ChartPanel({ title, subtitle, children }) {
+function ChartPanel({ title, subtitle, page, totalPages, onPrev, onNext, children }) {
     return (
         <div className="chart-panel">
             <div className="chart-panel__header">
-                <h3 className="chart-panel__title">{title}</h3>
-                {subtitle && <p className="chart-panel__subtitle">{subtitle}</p>}
+                <div className="chart-panel__header-text">
+                    <h3 className="chart-panel__title">{title}</h3>
+                    {subtitle && <p className="chart-panel__subtitle">{subtitle}</p>}
+                </div>
+                {totalPages > 1 && (
+                    <div className="chart-panel__pagination">
+                        <button className="chart-pagination__btn" disabled={page === 1} onClick={onPrev} title="Previous">
+                            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M10.854 3.146a.5.5 0 00-.708 0l-4.5 4.5a.5.5 0 000 .708l4.5 4.5a.5.5 0 00.708-.708L6.707 8l4.147-4.146a.5.5 0 000-.708z" /></svg>
+                        </button>
+                        <span className="chart-pagination__info">{page} of {totalPages}</span>
+                        <button className="chart-pagination__btn" disabled={page === totalPages} onClick={onNext} title="Next">
+                            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M5.146 3.146a.5.5 0 01.708 0l4.5 4.5a.5.5 0 010 .708l-4.5 4.5a.5.5 0 01-.708-.708L9.293 8 5.146 3.854a.5.5 0 010-.708z" /></svg>
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="chart-panel__body">
                 {children}
@@ -88,8 +137,8 @@ function ChartPanel({ title, subtitle, children }) {
 /* ================================================================
    HorizontalBarChart — pure-CSS bar chart
    ================================================================ */
-function HorizontalBarChart({ data, colors }) {
-    const max = Math.max(...data.map(d => d.count), 1);
+function HorizontalBarChart({ data, colors, maxTotal }) {
+    const max = maxTotal || Math.max(...data.map(d => d.count), 1);
 
     return (
         <div className="bar-chart">

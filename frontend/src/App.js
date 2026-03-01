@@ -142,6 +142,7 @@ function App() {
 
 /**
  * Demo data for when the API is not configured.
+ * Generates computationally large dataset to test UI scalability.
  */
 function getDemoData() {
     // Generate dates formatting as YYYY-MM-DD
@@ -156,50 +157,75 @@ function getDemoData() {
     const d2 = formatDate(yesterday);
     const d3 = formatDate(twoDaysAgo);
 
-    const baseAssignments = [
-        { account_id: '111111111111', account_name: 'Production', principal_type: 'USER', principal_name: 'jane.doe', principal_email: 'jane.doe@example.com', permission_set_name: 'AdministratorAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-admin', group_name: '' },
-        { account_id: '111111111111', account_name: 'Production', principal_type: 'GROUP', principal_name: 'SRE-Team', principal_email: '', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: '' },
-        { account_id: '111111111111', account_name: 'Production', principal_type: 'USER_VIA_GROUP', principal_name: 'bob.sre', principal_email: 'bob.sre@example.com', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: 'SRE-Team' },
-        { account_id: '111111111111', account_name: 'Production', principal_type: 'USER_VIA_GROUP', principal_name: 'carol.ops', principal_email: 'carol.ops@example.com', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: 'SRE-Team' },
-        { account_id: '222222222222', account_name: 'Staging', principal_type: 'USER', principal_name: 'john.smith', principal_email: 'john.smith@example.com', permission_set_name: 'AdministratorAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-admin', group_name: '' },
-        { account_id: '222222222222', account_name: 'Staging', principal_type: 'USER', principal_name: 'dev.user', principal_email: 'dev@example.com', permission_set_name: 'ReadOnlyAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-readonly', group_name: '' },
-        { account_id: '333333333333', account_name: 'Development', principal_type: 'GROUP', principal_name: 'Dev-Team', principal_email: '', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: '' },
-        { account_id: '333333333333', account_name: 'Development', principal_type: 'USER_VIA_GROUP', principal_name: 'alice.dev', principal_email: 'alice.dev@example.com', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: 'Dev-Team' },
-        { account_id: '333333333333', account_name: 'Development', principal_type: 'USER_VIA_GROUP', principal_name: 'frank.eng', principal_email: 'frank.eng@example.com', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: 'Dev-Team' },
-        { account_id: '333333333333', account_name: 'Development', principal_type: 'USER', principal_name: 'alice.dev', principal_email: 'alice@example.com', permission_set_name: 'AdministratorAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-admin', group_name: '' },
-        { account_id: '444444444444', account_name: 'Security', principal_type: 'GROUP', principal_name: 'Security-Auditors', principal_email: '', permission_set_name: 'SecurityAudit', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-audit', group_name: '' },
-        { account_id: '444444444444', account_name: 'Security', principal_type: 'USER_VIA_GROUP', principal_name: 'eve.sec', principal_email: 'eve.sec@example.com', permission_set_name: 'SecurityAudit', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-audit', group_name: 'Security-Auditors' },
-        { account_id: '555555555555', account_name: 'Sandbox', principal_type: 'USER', principal_name: 'intern.user', principal_email: 'intern@example.com', permission_set_name: 'ViewOnlyAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-view', group_name: '' },
-        { account_id: '555555555555', account_name: 'Sandbox', principal_type: 'USER', principal_name: 'test.user', principal_email: 'test@example.com', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: '' },
-        { account_id: '666666666666', account_name: 'Logging', principal_type: 'GROUP', principal_name: 'Platform-Team', principal_email: '', permission_set_name: 'AdministratorAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-admin', group_name: '' },
-        { account_id: '666666666666', account_name: 'Logging', principal_type: 'USER_VIA_GROUP', principal_name: 'dan.plat', principal_email: 'dan.plat@example.com', permission_set_name: 'AdministratorAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-admin', group_name: 'Platform-Team' },
-        { account_id: '666666666666', account_name: 'Logging', principal_type: 'USER_VIA_GROUP', principal_name: 'grace.plat', principal_email: 'grace.plat@example.com', permission_set_name: 'AdministratorAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-admin', group_name: 'Platform-Team' },
-        { account_id: '222222222222', account_name: 'Staging', principal_type: 'USER', principal_name: 'ops.admin', principal_email: 'ops.admin@example.com', permission_set_name: 'AdministratorAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-admin', group_name: '' },
-        { account_id: '111111111111', account_name: 'Production', principal_type: 'USER', principal_name: 'alice.dev', principal_email: 'alice.dev@example.com', permission_set_name: 'ReadOnlyAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-readonly', group_name: '' },
-        { account_id: '777777777777', account_name: 'Billing', principal_type: 'GROUP', principal_name: 'Finance-Team', principal_email: '', permission_set_name: 'BillingAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-billing', group_name: '' },
-        { account_id: '777777777777', account_name: 'Billing', principal_type: 'USER_VIA_GROUP', principal_name: 'helen.fin', principal_email: 'helen.fin@example.com', permission_set_name: 'BillingAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-billing', group_name: 'Finance-Team' },
-        { account_id: '777777777777', account_name: 'Billing', principal_type: 'USER_VIA_GROUP', principal_name: 'ivan.fin', principal_email: 'ivan.fin@example.com', permission_set_name: 'BillingAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-billing', group_name: 'Finance-Team' },
-        { account_id: '555555555555', account_name: 'Sandbox', principal_type: 'USER', principal_name: 'alice.dev', principal_email: 'alice.dev@example.com', permission_set_name: 'PowerUserAccess', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-power', group_name: '' },
-        { account_id: '888888888888', account_name: 'Network', principal_type: 'USER', principal_name: 'net.admin', principal_email: 'net.admin@example.com', permission_set_name: 'NetworkAdministrator', permission_set_arn: 'arn:aws:sso:::permissionSet/ssoins-xxx/ps-network', group_name: '' },
+    // Procedurally generate 120 accounts and ~1500 assignments
+    const baseAssignments = [];
+    const permissionSets = [
+        'AdministratorAccess', 'PowerUserAccess', 'ReadOnlyAccess', 'ViewOnlyAccess',
+        'SecurityAudit', 'BillingAccess', 'NetworkAdministrator', 'DatabaseAdministrator',
+        'DeveloperAccess', 'SupportUser'
     ];
+
+    const accountNames = ['Production', 'Staging', 'Development', 'Sandbox', 'Security', 'Logging', 'Network', 'SharedServices', 'DataLake', 'Analytics'];
+
+    // Generate 120 Accounts
+    for (let accIdx = 1; accIdx <= 120; accIdx++) {
+        const accountId = String(accIdx).padStart(12, '0');
+        const accountType = accountNames[accIdx % accountNames.length];
+        const accountName = `${accountType}-${accIdx}`;
+
+        // Assign 5-20 assignments per account
+        const numAssignments = 5 + (accIdx % 16);
+
+        for (let aIdx = 0; aIdx < numAssignments; aIdx++) {
+            const isGroup = (aIdx % 3 === 0);
+            const isUserViaGroup = (aIdx % 4 === 0) && !isGroup;
+
+            let principalType = 'USER';
+            if (isGroup) principalType = 'GROUP';
+            else if (isUserViaGroup) principalType = 'USER_VIA_GROUP';
+
+            const principalId = (accIdx + aIdx) % 200;
+            const principalName = isGroup ? `Team-${principalId}` : `user.${principalId}`;
+            const groupName = isUserViaGroup ? `Team-${principalId % 20}` : '';
+            const email = isGroup ? '' : `${principalName}@example.com`;
+
+            const permSetIdx = (accIdx + aIdx) % permissionSets.length;
+            const permissionSetName = permissionSets[permSetIdx];
+
+            baseAssignments.push({
+                account_id: accountId,
+                account_name: accountName,
+                principal_type: principalType,
+                principal_name: principalName,
+                principal_email: email,
+                permission_set_name: permissionSetName,
+                permission_set_arn: `arn:aws:sso:::permissionSet/ssoins-xxx/ps-${permissionSetName.toLowerCase()}`,
+                group_name: groupName
+            });
+        }
+    }
+
+    const uniqueAccounts = new Set(baseAssignments.map(a => a.account_id)).size;
+    const uniquePrincipals = new Set(baseAssignments.map(a => a.principal_name)).size;
+    const uniquePermSets = new Set(baseAssignments.map(a => a.permission_set_name)).size;
 
     return {
         availableDates: [d1, d2, d3],
         dataByDate: {
             [d1]: {
                 generated_at: today.toISOString(),
-                stats: { total_assignments: 24, total_accounts: 8, total_principals: 28, total_permission_sets: 8 },
+                stats: { total_assignments: baseAssignments.length, total_accounts: uniqueAccounts, total_principals: uniquePrincipals, total_permission_sets: uniquePermSets },
                 assignments: [...baseAssignments]
             },
             [d2]: {
                 generated_at: yesterday.toISOString(),
-                stats: { total_assignments: 23, total_accounts: 8, total_principals: 27, total_permission_sets: 8 },
-                assignments: baseAssignments.slice(0, 23) // simulate 1 fewer assignment yesterday
+                stats: { total_assignments: baseAssignments.length - 10, total_accounts: uniqueAccounts, total_principals: uniquePrincipals, total_permission_sets: uniquePermSets },
+                assignments: baseAssignments.slice(0, baseAssignments.length - 10)
             },
             [d3]: {
                 generated_at: twoDaysAgo.toISOString(),
-                stats: { total_assignments: 20, total_accounts: 7, total_principals: 25, total_permission_sets: 7 },
-                assignments: baseAssignments.slice(0, 20) // simulate fewer assignments two days ago
+                stats: { total_assignments: baseAssignments.length - 25, total_accounts: uniqueAccounts, total_principals: uniquePrincipals, total_permission_sets: uniquePermSets },
+                assignments: baseAssignments.slice(0, baseAssignments.length - 25)
             }
         }
     };
