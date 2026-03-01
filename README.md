@@ -2,10 +2,6 @@
 
 An open-source, serverless governance dashboard that audits AWS IAM Identity Center (SSO) permission assignments across your entire AWS Organization.
 
-## Screenshots
-
-![Dashboard](docs/screenshots/dashboard.png)
-
 ## Architecture
 
 ```
