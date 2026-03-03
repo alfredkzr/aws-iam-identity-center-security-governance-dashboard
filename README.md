@@ -4,25 +4,58 @@ An open-source, serverless governance dashboard that audits AWS IAM Identity Cen
 
 ## Architecture
 
-```
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│ CloudFront  │────▶│  Athena Proxy    │────▶│     Athena      │
-│  + S3       │     │    (Lambda)      │     │   (SQL Query)   │
-│ (React UI)  │     │  + Fast Cache    │     │                 │
-└─────────────┘     └──────────────────┘     └────────┬────────┘
-                                                      │
-                                                      ▼
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  EventBridge│────▶│  Step Functions  │────▶│   S3 Inventory  │
-│  (Schedule) │     │ Distributed Map  │     │   (CSV files)   │
-└─────────────┘     └──────────────────┘     └─────────────────┘
-                           │
-                    ┌──────┴──────┐
-                    ▼             ▼
-              ┌──────────┐ ┌──────────┐
-              │  Worker  │ │  Worker  │  ... per account
-              │ (Lambda) │ │ (Lambda) │
-              └──────────┘ └──────────┘
+```mermaid
+flowchart TD
+    %% AWS styling definitions
+    classDef awsStorage fill:#3F8624,stroke:#1D5C05,stroke-width:2px,color:#ffffff,rx:8px,ry:8px
+    classDef awsCompute fill:#F58536,stroke:#D35D08,stroke-width:2px,color:#ffffff,rx:8px,ry:8px
+    classDef awsNetwork fill:#8C4FFF,stroke:#5A1EB3,stroke-width:2px,color:#ffffff,rx:8px,ry:8px
+    classDef awsAnalytics fill:#8C4FFF,stroke:#5A1EB3,stroke-width:2px,color:#ffffff,rx:8px,ry:8px
+    classDef awsIntegration fill:#CC2264,stroke:#910E40,stroke-width:2px,color:#ffffff,rx:8px,ry:8px
+    classDef awsSecurity fill:#DD344C,stroke:#9E0E22,stroke-width:2px,color:#ffffff,rx:8px,ry:8px
+    classDef awsManagement fill:#CC2264,stroke:#910E40,stroke-width:2px,color:#ffffff,rx:8px,ry:8px
+    classDef userType fill:#ffffff,stroke:#333333,stroke-width:2px,color:#333333,rx:20px,ry:20px
+
+    User(("👥 Admin /\nAuditor")):::userType
+
+    subgraph ClientLayer ["1️⃣ Presentation & API Layer"]
+        CF["🌩️ CloudFront & S3\n(React UI)"]:::awsNetwork
+        Proxy["⚡ Athena Proxy Lambda\n(API Backend)"]:::awsCompute
+    end
+
+    subgraph DataLayer ["2️⃣ Analytics & Data Lake"]
+        Athena["📊 Amazon Athena\n(SQL Engine)"]:::awsAnalytics
+        S3DB["🪣 S3 Inventory Bucket\n(CSV & JSON Cache)"]:::awsStorage
+    end
+
+    subgraph IngestionLayer ["3️⃣ Ingestion & Crawl Pipeline"]
+        EB["⏱️ EventBridge\n(Daily Schedule)"]:::awsManagement
+        SFN["🛤️ Step Functions\n(Distributed Map)"]:::awsIntegration
+        Worker["⚡ Worker Lambdas\n(1 per Account)"]:::awsCompute
+    end
+
+    subgraph TargetLayer ["4️⃣ Target Organization"]
+        Org["🏢 AWS Organizations\n(Account Structure)"]:::awsManagement
+        IDC["🛡️ IAM Identity Center\n(SSO Assignments)"]:::awsSecurity
+    end
+
+    %% User Interactions
+    User -->|Views Dashboard| CF
+    User -->|API Requests| Proxy
+
+    %% API to Data
+    Proxy -.->|Cache Hit\n(Fast Load)| S3DB
+    Proxy -->|Execute Query| Athena
+    Athena -->|Scans Data| S3DB
+
+    %% Ingestion Flow
+    EB -->|Triggers| SFN
+    SFN -->|Orchestrates\nParallel Execution| Worker
+    Worker -->|Writes Daily\nCSV Exports| S3DB
+
+    %% Crawling Flow
+    Worker -.->|Discovers\nAccounts| Org
+    Worker -.->|Audits\nPermissions| IDC
 ```
 
 ## Features
