@@ -184,11 +184,12 @@ The dashboard will populate within **1–3 minutes** once the crawl completes. S
 
 ---
 
-## Okta SSO Setup
-
-The dashboard supports Okta OIDC authentication. If Okta is not configured, it falls back to local username/password auth (suitable for development only).
-
 ### 1. Create an Okta Application
+
+> [!IMPORTANT]
+> **Authentication Fallback:** If Okta is not configured, the dashboard defaults to **Local Auth Mode** for demonstration purposes. This uses hardcoded credentials (`admin` / `admin123`) in `AuthContext.js`. While useful for a quick PoC, **always remove these fallback credentials or configure Okta before exposing the dashboard to the public internet.**
+
+1. Log into your [Okta Admin Console](https://your-org-admin.okta.com/admin/apps/active)
 
 1. Log into your [Okta Admin Console](https://your-org-admin.okta.com/admin/apps/active)
 2. Go to **Applications → Create App Integration**
@@ -318,6 +319,14 @@ aws-iam-identity-center-governance-dashboard/
 | Athena Proxy Lambda | Athena query execution; Read/write S3; Read-only Glue catalog |
 | Step Functions | Invoke worker Lambda only |
 
+### Security Considerations for Public Repos
+
+If you plan to fork or make this repository public, please address the following:
+
+- **Disable Local Demo Auth:** Remove the `LOCAL_USERS` array and `loginLocal` logic in `frontend/src/auth/AuthContext.js`.
+- **Implement a WAF:** For production use cases, it is highly recommended to attach an **AWS WAFv2 Web ACL** to the CloudFront distribution to protect against volumetric attacks and common web exploits. This is omitted by default to keep PoC costs at near-zero levels.
+- **Rotate Secrets:** Ensure no sensitive organization IDs or ARNs are committed to your public repository. Use the `terraform.tfvars` file (which is git-ignored) to manage environment-specific values.
+
 ---
 
 ## Cost Estimate
@@ -392,9 +401,15 @@ Athena charges **$5 per TB scanned**. Each CSV file per account is ~10–100 KB.
 
 ### Cost Optimization Tips
 
-- **Reduce crawl frequency**: Set `crawler_schedule_interval = "1 day"` to cut Step Functions costs by 4×
-- **Fewer accounts**: Use concurrency limits (`worker_reserved_concurrency`) to throttle parallel execution
-- **Cache hits**: The `summary.json` fast-load cache means most UI loads never hit Athena
+- **Reduce crawl frequency**: Set `crawler_schedule_interval = "1 day"` to cut Step Functions costs by 4×. This is the single most effective way to keep PoC costs down while maintaining daily visibility.
+- **Fewer accounts**: Use concurrency limits (`worker_reserved_concurrency`) to throttle parallel execution and limit the blast radius.
+- **Cache hits**: The `summary.json` fast-load cache means most UI loads never hit Athena, saving on TB-scanned costs.
+
+### PoC & Testing Considerations
+
+For Proof of Concept (PoC) environments, the architecture prioritizes **Minimal Recurring Costs** over **Defense-in-Depth**. Features like AWS WAF and High-Availability Multi-AZ configurations are optional to ensure that the initial barrier to entry is as close to the AWS Free Tier as possible. 
+
+If transitioning from a PoC to a Production environment, consult the [Security](#security) section for recommended hardening steps.
 
 ---
 
