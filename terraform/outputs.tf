@@ -28,8 +28,8 @@ output "athena_proxy_lambda_arn" {
 }
 
 output "athena_proxy_url" {
-  description = "Function URL for the Athena Proxy Lambda (frontend API endpoint)"
-  value       = aws_lambda_function_url.athena_proxy.function_url
+  description = "CloudFront endpoint for the Athena Proxy API"
+  value       = "https://${aws_cloudfront_distribution.frontend.domain_name}/api"
 }
 
 output "step_functions_arn" {

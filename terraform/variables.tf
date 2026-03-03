@@ -55,22 +55,6 @@ variable "force_destroy_buckets" {
   default     = false
 }
 
-variable "allowed_origins" {
-  description = "List of allowed CORS origins for the Lambda Function URL. Restrict this to your Amplify domain in production."
-  type        = list(string)
-  default     = ["*"]
-}
-
-variable "lambda_url_auth_type" {
-  description = "Authorization type for the Athena Proxy Lambda Function URL. Use 'AWS_IAM' for production (requires SigV4 signed requests from frontend)."
-  type        = string
-  default     = "AWS_IAM"
-
-  validation {
-    condition     = contains(["NONE", "AWS_IAM"], var.lambda_url_auth_type)
-    error_message = "lambda_url_auth_type must be either 'NONE' or 'AWS_IAM'."
-  }
-}
 
 # -----------------------------------------------------------------------------
 # Cost & Performance Guardrails

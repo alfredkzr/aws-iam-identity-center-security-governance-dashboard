@@ -40,6 +40,14 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   signing_protocol                  = "sigv4"
 }
 
+resource "aws_cloudfront_origin_access_control" "athena_proxy" {
+  name                              = "${var.resource_prefix}-api-oac"
+  description                       = "OAC for Lambda Function URL"
+  origin_access_control_origin_type = "lambda"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 # S3 bucket policy — allow CloudFront OAC to read objects
 resource "aws_s3_bucket_policy" "frontend_policy" {
   bucket = aws_s3_bucket.frontend.id
@@ -78,6 +86,41 @@ resource "aws_cloudfront_distribution" "frontend" {
     domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
     origin_id                = "S3-${aws_s3_bucket.frontend.id}"
     origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
+  }
+
+  origin {
+    domain_name              = split("/", aws_lambda_function_url.athena_proxy.function_url)[2]
+    origin_id                = "Lambda-${aws_lambda_function.athena_proxy.function_name}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.athena_proxy.id
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/api*"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "Lambda-${aws_lambda_function.athena_proxy.function_name}"
+    viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values {
+      query_string = true
+      headers      = ["content-type", "x-api-key"]
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+    compress    = true
   }
 
   default_cache_behavior {
@@ -141,7 +184,7 @@ resource "null_resource" "frontend_deploy" {
   provisioner "local-exec" {
     working_dir = "${path.module}/../frontend"
     environment = {
-      REACT_APP_API_ENDPOINT = aws_lambda_function_url.athena_proxy.function_url
+      REACT_APP_API_ENDPOINT = "https://${aws_cloudfront_distribution.frontend.domain_name}/api"
       REACT_APP_AWS_REGION   = var.aws_region
       REACT_APP_OKTA_DOMAIN    = var.okta_domain
       REACT_APP_OKTA_CLIENT_ID = var.okta_client_id

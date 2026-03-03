@@ -68,7 +68,6 @@ resource "aws_lambda_function" "athena_proxy" {
       ATHENA_WORKGROUP      = aws_athena_workgroup.main.name
       ATHENA_DATABASE       = "${replace(var.resource_prefix, "-", "_")}_db"
       ATHENA_TABLE          = "assignments"
-      ALLOWED_ORIGIN        = join(",", var.allowed_origins)
     }
   }
 }
@@ -84,33 +83,15 @@ resource "aws_cloudwatch_log_group" "athena_proxy" {
 
 resource "aws_lambda_function_url" "athena_proxy" {
   function_name      = aws_lambda_function.athena_proxy.function_name
-  authorization_type = var.lambda_url_auth_type
-
-  cors {
-    allow_origins = var.allowed_origins
-    allow_methods = ["GET", "POST"]
-    allow_headers = ["content-type", "authorization"]
-    max_age       = 3600
-  }
+  authorization_type = "AWS_IAM"
 }
 
-# Resource-based policy required for public Function URL (auth_type = NONE).
-# Both permissions are needed — InvokeFunctionUrl alone returns 403 Forbidden.
-resource "aws_lambda_permission" "athena_proxy_url_public" {
-  count = var.lambda_url_auth_type == "NONE" ? 1 : 0
-
-  statement_id           = "AllowPublicFunctionUrlInvoke"
+# Resource-based policy to allow CloudFront OAC to invoke the Lambda Function URL securely
+resource "aws_lambda_permission" "athena_proxy_url_cloudfront" {
+  statement_id           = "AllowCloudFrontToInvokeFunctionUrl"
   action                 = "lambda:InvokeFunctionUrl"
   function_name          = aws_lambda_function.athena_proxy.function_name
-  principal              = "*"
-  function_url_auth_type = "NONE"
-}
-
-resource "aws_lambda_permission" "athena_proxy_invoke_public" {
-  count = var.lambda_url_auth_type == "NONE" ? 1 : 0
-
-  statement_id  = "AllowPublicLambdaInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.athena_proxy.function_name
-  principal     = "*"
+  principal              = "cloudfront.amazonaws.com"
+  source_arn             = aws_cloudfront_distribution.frontend.arn
+  function_url_auth_type = "AWS_IAM"
 }
