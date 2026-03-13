@@ -248,8 +248,31 @@
 .ps-name {
     font-weight: 600;
     color: var(--text-primary);
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     word-break: break-word;
+    text-decoration: none;
+}
+
+.ps-name--link {
+    color: var(--aws-blue);
+    transition: color var(--transition-fast);
+}
+
+.ps-name--link:hover {
+    color: var(--aws-blue-hover);
+    text-decoration: underline;
+}
+
+.ps-name-icon {
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.ps-name--link:hover .ps-name-icon {
+    opacity: 1;
 }
 
 .ps-arn {
@@ -258,6 +281,7 @@
     color: var(--text-muted);
     font-family: var(--font-mono);
     word-break: break-all;
+    margin-top: 2px;
 }
 
 /* Description cell — wraps naturally */

@@ -172,6 +172,24 @@ function PermissionSetsTable({ data, loading, availableDates = [], selectedDate,
         return `https://docs.aws.amazon.com/aws-managed-policy/latest/reference/${policyName}.html`;
     };
 
+    // Build AWS SSO Console URL for Permission Set
+    const getAwsPermissionSetUrl = (arn) => {
+        if (!arn) return '#';
+        // ARN format: arn:aws:sso:::permissionSet/ssoins-xxx/ps-xxx
+        const parts = arn.split(':');
+        if (parts.length < 6) return '#';
+        
+        // Identity Center ARNs lack a region, so we must use the deployment region
+        const envRegion = process.env.REACT_APP_AWS_REGION;
+        const region = (envRegion && envRegion.trim() !== '') ? envRegion : 'ap-southeast-1';
+        
+        const resourceParts = parts[5].split('/');
+        if (resourceParts.length < 3) return '#';
+        const instanceId = resourceParts[1];
+        const psId = resourceParts[2];
+        return `https://${region}.console.aws.amazon.com/singlesignon/home?region=${region}#/instances/${instanceId}/permission-sets/details/${psId}?section=permissions`;
+    };
+
     // ---- Export Functions ----
     const exportCSV = () => {
         const headers = [
@@ -446,7 +464,23 @@ function PermissionSetsTable({ data, loading, availableDates = [], selectedDate,
                                         <tr className={`ps-tr ${isExpanded ? 'ps-tr--expanded' : ''}`}>
                                             {/* Name + ARN */}
                                             <td className="ps-td">
-                                                <span className="ps-name">{ps.name}</span>
+                                                {ps.arn ? (
+                                                    <a
+                                                        href={getAwsPermissionSetUrl(ps.arn)}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="ps-name ps-name--link"
+                                                        title="Open in AWS Console"
+                                                    >
+                                                        {ps.name}
+                                                        <svg className="ps-name-icon" width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                                                            <path d="M8.636 3.5a.5.5 0 00-.5-.5H1.5A1.5 1.5 0 000 4.5v10A1.5 1.5 0 001.5 16h10a1.5 1.5 0 001.5-1.5V7.864a.5.5 0 00-1 0V14.5a.5.5 0 01-.5.5h-10a.5.5 0 01-.5-.5v-10a.5.5 0 01.5-.5h6.636a.5.5 0 00.5-.5z"/>
+                                                            <path d="M16 .5a.5.5 0 00-.5-.5h-5a.5.5 0 000 1h3.793L6.146 9.146a.5.5 0 10.708.708L15 1.707V5.5a.5.5 0 001 0v-5z"/>
+                                                        </svg>
+                                                    </a>
+                                                ) : (
+                                                    <span className="ps-name">{ps.name}</span>
+                                                )}
                                                 <span className="ps-arn" title={ps.arn}>
                                                     {ps.arn ? `…${ps.arn.split('/').pop()}` : ''}
                                                 </span>
