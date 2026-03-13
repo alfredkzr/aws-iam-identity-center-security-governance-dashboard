@@ -46,6 +46,8 @@ def lambda_handler(event, context):
         return handle_list_accounts()
     elif action == "process_account":
         return handle_process_account(event)
+    elif action == "crawl_permission_sets":
+        return handle_crawl_permission_sets()
     else:
         raise ValueError(f"Unknown action: {action}")
 
@@ -148,6 +150,212 @@ def handle_process_account(event):
         "account_id": account_id,
         "assignment_count": len(assignments),
     }
+
+
+# ---------------------------------------------------------------------------
+# Action: Crawl Permission Sets
+# ---------------------------------------------------------------------------
+def handle_crawl_permission_sets():
+    """Crawl all permission set details and write JSON to S3."""
+    logger.info("Crawling all permission set details")
+
+    permission_set_arns = list_permission_sets()
+    records = []
+
+    for ps_arn in permission_set_arns:
+        try:
+            record = _describe_permission_set_full(ps_arn)
+            records.append(record)
+        except Exception as exc:
+            logger.warning(f"Failed to crawl permission set {ps_arn}: {exc}")
+            records.append({"arn": ps_arn, "name": ps_arn, "error": str(exc)})
+
+    # Write JSON to S3
+    _write_permission_sets_json(records)
+
+    logger.info(f"Crawled {len(records)} permission sets")
+    return {
+        "status": "success",
+        "permission_set_count": len(records),
+    }
+
+
+def _describe_permission_set_full(permission_set_arn):
+    """Build a full detail record for a single permission set."""
+    # Core details
+    ps_resp = sso_admin.describe_permission_set(
+        InstanceArn=SSO_INSTANCE_ARN,
+        PermissionSetArn=permission_set_arn,
+    )
+    ps = ps_resp["PermissionSet"]
+
+    record = {
+        "name": ps.get("Name", ""),
+        "arn": permission_set_arn,
+        "description": ps.get("Description", ""),
+        "session_duration": ps.get("SessionDuration", ""),
+        "created_date": ps.get("CreatedDate", "").isoformat()
+        if hasattr(ps.get("CreatedDate", ""), "isoformat")
+        else str(ps.get("CreatedDate", "")),
+    }
+
+    # AWS managed policies
+    record["aws_managed_policies"] = _list_aws_managed_policies(permission_set_arn)
+
+    # Customer managed policies
+    record["customer_managed_policies"] = _list_customer_managed_policies(permission_set_arn)
+
+    # Inline policy
+    record["inline_policy"] = _get_inline_policy(permission_set_arn)
+
+    # Permissions boundary
+    record["permissions_boundary"] = _get_permissions_boundary(permission_set_arn)
+
+    # Tags
+    record["tags"] = _list_tags(permission_set_arn)
+
+    # Provisioned accounts count
+    record["provisioned_accounts"] = _count_provisioned_accounts(permission_set_arn)
+
+    return record
+
+
+def _count_provisioned_accounts(permission_set_arn):
+    """Count how many AWS accounts this permission set is provisioned to."""
+    account_ids = []
+    try:
+        paginator = sso_admin.get_paginator(
+            "list_accounts_for_provisioned_permission_set"
+        )
+        for page in paginator.paginate(
+            InstanceArn=SSO_INSTANCE_ARN,
+            PermissionSetArn=permission_set_arn,
+        ):
+            account_ids.extend(page.get("AccountIds", []))
+    except Exception as exc:
+        logger.warning(
+            f"Failed to list provisioned accounts for {permission_set_arn}: {exc}"
+        )
+        return 0
+    return len(account_ids)
+
+
+def _list_aws_managed_policies(permission_set_arn):
+    """List AWS managed policies attached to a permission set."""
+    policies = []
+    try:
+        paginator = sso_admin.get_paginator("list_managed_policies_in_permission_set")
+        for page in paginator.paginate(
+            InstanceArn=SSO_INSTANCE_ARN,
+            PermissionSetArn=permission_set_arn,
+        ):
+            for policy in page.get("AttachedManagedPolicies", []):
+                policies.append({
+                    "name": policy.get("Name", ""),
+                    "arn": policy.get("Arn", ""),
+                })
+    except Exception as exc:
+        logger.warning(f"Failed to list managed policies for {permission_set_arn}: {exc}")
+    return policies
+
+
+def _list_customer_managed_policies(permission_set_arn):
+    """List customer managed policy references attached to a permission set."""
+    policies = []
+    try:
+        paginator = sso_admin.get_paginator(
+            "list_customer_managed_policy_references_in_permission_set"
+        )
+        for page in paginator.paginate(
+            InstanceArn=SSO_INSTANCE_ARN,
+            PermissionSetArn=permission_set_arn,
+        ):
+            for ref in page.get("CustomerManagedPolicyReferences", []):
+                policies.append({
+                    "name": ref.get("Name", ""),
+                    "path": ref.get("Path", "/"),
+                })
+    except Exception as exc:
+        logger.warning(
+            f"Failed to list customer managed policies for {permission_set_arn}: {exc}"
+        )
+    return policies
+
+
+def _get_inline_policy(permission_set_arn):
+    """Get the inline policy document for a permission set."""
+    try:
+        response = sso_admin.get_inline_policy_for_permission_set(
+            InstanceArn=SSO_INSTANCE_ARN,
+            PermissionSetArn=permission_set_arn,
+        )
+        return response.get("InlinePolicy", "")
+    except Exception as exc:
+        logger.warning(f"Failed to get inline policy for {permission_set_arn}: {exc}")
+        return ""
+
+
+def _get_permissions_boundary(permission_set_arn):
+    """Get the permissions boundary for a permission set."""
+    try:
+        response = sso_admin.get_permissions_boundary_for_permission_set(
+            InstanceArn=SSO_INSTANCE_ARN,
+            PermissionSetArn=permission_set_arn,
+        )
+        boundary = response.get("PermissionsBoundary", {})
+        result = {}
+        if "ManagedPolicyArn" in boundary:
+            result["managed_policy_arn"] = boundary["ManagedPolicyArn"]
+        if "CustomerManagedPolicyReference" in boundary:
+            ref = boundary["CustomerManagedPolicyReference"]
+            result["customer_managed_policy_reference"] = {
+                "name": ref.get("Name", ""),
+                "path": ref.get("Path", "/"),
+            }
+        return result if result else None
+    except sso_admin.exceptions.ResourceNotFoundException:
+        return None
+    except Exception as exc:
+        # Some permission sets simply don't have a boundary — not an error
+        if "ResourceNotFoundException" in str(exc):
+            return None
+        logger.warning(
+            f"Failed to get permissions boundary for {permission_set_arn}: {exc}"
+        )
+        return None
+
+
+def _list_tags(permission_set_arn):
+    """List tags on a permission set."""
+    tags = []
+    try:
+        paginator = sso_admin.get_paginator("list_tags_for_resource")
+        for page in paginator.paginate(
+            InstanceArn=SSO_INSTANCE_ARN,
+            ResourceArn=permission_set_arn,
+        ):
+            tags.extend(page.get("Tags", []))
+    except Exception as exc:
+        logger.warning(f"Failed to list tags for {permission_set_arn}: {exc}")
+    return tags
+
+
+def _write_permission_sets_json(records):
+    """Write permission set records as JSON to S3."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    key = f"permission_sets/snapshot_date={today}/permission_sets.json"
+
+    # Write as JSON Lines (one JSON object per line) for Athena compatibility
+    lines = [json.dumps(record, default=str) for record in records]
+    body = "\n".join(lines)
+
+    s3.put_object(
+        Bucket=INVENTORY_BUCKET,
+        Key=key,
+        Body=body.encode("utf-8"),
+        ContentType="application/json",
+    )
+    logger.info(f"Wrote {len(records)} permission sets to s3://{INVENTORY_BUCKET}/{key}")
 
 
 # ---------------------------------------------------------------------------

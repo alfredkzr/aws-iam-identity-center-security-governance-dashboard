@@ -240,8 +240,9 @@
     font-weight: 600;
     color: var(--text-secondary);
     text-align: center;
-    padding: 6px 4px 8px;
-    white-space: nowrap;
+    padding: 6px 8px 8px;
+    word-break: break-word;
+    min-width: 100px;
     letter-spacing: -0.02em;
 }
 

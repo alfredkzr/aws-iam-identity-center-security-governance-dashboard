@@ -205,9 +205,6 @@ function AccessHeatmap({ assignments }) {
     const getTextColor = (count) =>
         count >= 4 ? '#fff' : count >= 1 ? '#0d47a1' : 'transparent';
 
-    // Short column label: first 3 chars
-    const shortLabel = (name) => name.length > 8 ? name.slice(0, 7) + '…' : name;
-
     return (
         <div className="heatmap-wrapper">
             <div className="heatmap-scroll">
@@ -217,7 +214,7 @@ function AccessHeatmap({ assignments }) {
                             <th className="heatmap__corner"></th>
                             {accounts.map(acct => (
                                 <th className="heatmap__col-header" key={acct} title={acct}>
-                                    {shortLabel(acct)}
+                                    {acct}
                                 </th>
                             ))}
                         </tr>

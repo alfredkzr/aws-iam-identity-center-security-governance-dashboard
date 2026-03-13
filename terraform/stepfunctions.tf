@@ -58,12 +58,29 @@ resource "aws_sfn_state_machine" "crawler" {
         }
         MaxConcurrency = 10
         ResultPath     = "$.map_results"
-        Next           = "CrawlComplete"
+        Next           = "CrawlPermissionSets"
+      }
+
+      CrawlPermissionSets = {
+        Type     = "Task"
+        Resource = "arn:aws:states:::lambda:invoke"
+        Parameters = {
+          FunctionName = aws_lambda_function.worker.arn
+          Payload = {
+            action = "crawl_permission_sets"
+          }
+        }
+        ResultPath = "$.permission_sets_result"
+        ResultSelector = {
+          "status.$"               = "$.Payload.status"
+          "permission_set_count.$" = "$.Payload.permission_set_count"
+        }
+        Next = "CrawlComplete"
       }
 
       CrawlComplete = {
         Type = "Succeed"
-        Comment = "All accounts processed successfully"
+        Comment = "All accounts and permission sets processed successfully"
       }
     }
   })

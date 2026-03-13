@@ -50,7 +50,12 @@ resource "aws_iam_role_policy" "worker_lambda_policy" {
           "sso:ListAccountAssignments",
           "sso:ListPermissionSets",
           "sso:DescribePermissionSet",
-          "sso:ListAccountsForProvisionedPermissionSet"
+          "sso:ListAccountsForProvisionedPermissionSet",
+          "sso:ListManagedPoliciesInPermissionSet",
+          "sso:GetInlinePolicyForPermissionSet",
+          "sso:ListCustomerManagedPolicyReferencesInPermissionSet",
+          "sso:GetPermissionsBoundaryForPermissionSet",
+          "sso:ListTagsForResource"
         ]
         Resource = "*"
       },

@@ -120,6 +120,60 @@ body {
 }
 
 /* ================================================================
+   Tab Navigation
+   ================================================================ */
+
+.tab-nav {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-divider);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  box-shadow: var(--shadow-sticky);
+}
+
+.tab-nav__inner {
+  display: flex;
+  gap: 0;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--space-xxl);
+}
+
+.tab-nav__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-m) var(--space-xl);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+}
+
+.tab-nav__tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.tab-nav__tab--active {
+  color: var(--aws-blue);
+  border-bottom-color: var(--aws-blue);
+  font-weight: 600;
+}
+
+.tab-nav__tab--active:hover {
+  color: var(--aws-blue);
+  background: transparent;
+}
+
+/* ================================================================
    Utilities
    ================================================================ */
 

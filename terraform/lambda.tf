@@ -62,12 +62,13 @@ resource "aws_lambda_function" "athena_proxy" {
 
   environment {
     variables = {
-      INVENTORY_BUCKET      = aws_s3_bucket.inventory.id
-      ATHENA_RESULTS_BUCKET = aws_s3_bucket.athena_results.id
-      CACHE_BUCKET          = aws_s3_bucket.cache.id
-      ATHENA_WORKGROUP      = aws_athena_workgroup.main.name
-      ATHENA_DATABASE       = "${replace(var.resource_prefix, "-", "_")}_db"
-      ATHENA_TABLE          = "assignments"
+      INVENTORY_BUCKET              = aws_s3_bucket.inventory.id
+      ATHENA_RESULTS_BUCKET         = aws_s3_bucket.athena_results.id
+      CACHE_BUCKET                  = aws_s3_bucket.cache.id
+      ATHENA_WORKGROUP              = aws_athena_workgroup.main.name
+      ATHENA_DATABASE               = "${replace(var.resource_prefix, "-", "_")}_db"
+      ATHENA_TABLE                  = "assignments"
+      ATHENA_PERMISSION_SETS_TABLE  = "permission_sets"
     }
   }
 }

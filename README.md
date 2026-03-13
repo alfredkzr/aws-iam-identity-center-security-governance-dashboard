@@ -1,6 +1,6 @@
 # AWS IAM Identity Center Governance Dashboard
 
-> **A serverless, open-source dashboard to audit IAM Identity Center (SSO) permission assignments across your entire AWS Organization — deployed in minutes with Terraform.**
+> **A serverless, open-source dashboard to audit IAM Identity Center (SSO) permission assignments and permission set configurations across your entire AWS Organization — deployed in minutes with Terraform.**
 <img width="2056" height="1163" alt="image" src="https://github.com/user-attachments/assets/51660a53-8f0b-41e1-a72b-9162856657df" />
 
 
@@ -30,11 +30,11 @@
 
 ## Overview
 
-The **AWS IAM Identity Center Governance Dashboard** gives security teams and auditors a single-pane view of _who has access to what_ across every account in an AWS Organization. It crawls IAM Identity Center assignments on a configurable schedule (every 6 hours by default), stores structured snapshots in S3, and surfaces them through an interactive React UI — all without managing servers.
+The **AWS IAM Identity Center Governance Dashboard** gives security teams and auditors a single-pane view of _who has access to what_ and _what each permission set contains_ across every account in an AWS Organization. It crawls IAM Identity Center assignments and permission set configurations on a configurable schedule (every 6 hours by default), stores structured snapshots in S3, and surfaces them through an interactive React UI — all without managing servers.
 
 **Built for teams who need:**
-- Continuous visibility into SSO permission sprawl
-- Audit-ready exports of assignments across hundreds of accounts
+- Continuous visibility into SSO permission sprawl and permission set configurations
+- Audit-ready exports of assignments and permission set details across hundreds of accounts
 - A zero-maintenance, cost-optimized setup (~$0.10–$5/month)
 
 ---
@@ -78,7 +78,7 @@ flowchart TD
     Workers --> IDC
 ```
 
-> **Data flow:** EventBridge triggers Step Functions on a schedule (every 6h by default) → Worker Lambdas crawl each AWS account in parallel → results are written to S3 → Athena queries the data → the React UI displays assignments via the Athena Proxy Lambda.
+> **Data flow:** EventBridge triggers Step Functions on a schedule (every 6h by default) → Worker Lambdas crawl each AWS account's assignments in parallel, then crawl all permission set details → results are written to S3 → Athena queries the data → the React UI displays assignments and permission sets via the Athena Proxy Lambda.
 
 ---
 
@@ -87,6 +87,7 @@ flowchart TD
 | Feature | Description |
 |---------|-------------|
 | 🏢 **Full Org Crawl** | Discovers all accounts in your AWS Organization and audits IAM Identity Center assignments |
+| 🔒 **Permission Set Details** | Crawls every permission set — AWS managed policies, customer managed policies, inline policies, permissions boundaries, session duration, tags |
 | ⚡ **Distributed Processing** | Step Functions Distributed Map runs one Lambda per account in parallel |
 | 👤 **User & Group Resolution** | Resolves GUIDs to friendly names, emails, and expanded group memberships |
 | 🚀 **Fast-Load Cache** | Athena Proxy serves pre-rendered `summary.json` from S3 before falling back to SQL |
@@ -282,13 +283,13 @@ aws-iam-identity-center-governance-dashboard/
 │   ├── frontend_hosting.tf        # S3 + CloudFront (auto-builds & deploys frontend)
 │   ├── lambda.tf                  # Lambda functions (worker + athena proxy)
 │   ├── iam.tf                     # IAM roles & policies (least privilege)
-│   ├── athena.tf                  # Athena workgroup & Glue catalog
-│   ├── stepfunctions.tf           # Step Functions state machine
+│   ├── athena.tf                  # Athena workgroup & Glue catalog (assignments + permission_sets tables)
+│   ├── stepfunctions.tf           # Step Functions state machine (assignments crawl + permission sets crawl)
 │   └── eventbridge.tf             # EventBridge scheduled trigger rule
 ├── backend/
-│   ├── worker/                    # Account assignment crawler Lambda (Python)
+│   ├── worker/                    # Assignment + permission set crawler Lambda (Python)
 │   └── athena_proxy/              # Query lifecycle + cache Lambda (Python)
-├── frontend/                      # React dashboard (Okta SSO + local auth)
+├── frontend/                      # React dashboard with Assignments & Permission Sets tabs
 └── terraform.tfvars.example       # Configuration template — copy and fill in
 ```
 

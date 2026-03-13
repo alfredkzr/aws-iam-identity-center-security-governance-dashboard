@@ -27,21 +27,23 @@ CACHE_BUCKET = os.environ.get("CACHE_BUCKET", "")
 ATHENA_WORKGROUP = os.environ.get("ATHENA_WORKGROUP", "")
 ATHENA_DATABASE = os.environ.get("ATHENA_DATABASE", "")
 ATHENA_TABLE = os.environ.get("ATHENA_TABLE", "assignments")
+ATHENA_PERMISSION_SETS_TABLE = os.environ.get("ATHENA_PERMISSION_SETS_TABLE", "permission_sets")
 ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
 
 CACHE_KEY = "summary.json"
 CACHE_MAX_AGE_SECONDS = 3600  # 1 hour
 
 # Valid query types — allowlist to prevent abuse
-VALID_QUERY_TYPES = {"all", "summary", "dates"}
+VALID_QUERY_TYPES = {"all", "summary", "dates", "permission_sets", "permission_sets_dates"}
 
-# Validate table name at cold-start to prevent SQL injection
+# Validate table names at cold-start to prevent SQL injection
 _TABLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
-if not _TABLE_NAME_PATTERN.match(ATHENA_TABLE):
-    raise ValueError(
-        f"Invalid ATHENA_TABLE name '{ATHENA_TABLE}'. "
-        "Must match pattern: ^[a-zA-Z_][a-zA-Z0-9_]*$"
-    )
+for _tbl_name in (ATHENA_TABLE, ATHENA_PERMISSION_SETS_TABLE):
+    if not _TABLE_NAME_PATTERN.match(_tbl_name):
+        raise ValueError(
+            f"Invalid table name '{_tbl_name}'. "
+            "Must match pattern: ^[a-zA-Z_][a-zA-Z0-9_]*$"
+        )
 
 # Boto3 clients
 boto_config = Config(retries={"max_attempts": 5, "mode": "adaptive"})
@@ -65,6 +67,17 @@ def lambda_handler(event, context):
         if query_type == "dates":
             dates = _get_available_dates()
             return _response(200, {"dates": dates})
+
+        # Fast path: list available permission sets dates from S3
+        if query_type == "permission_sets_dates":
+            dates = _get_available_dates(prefix="permission_sets/snapshot_date=")
+            return _response(200, {"dates": dates})
+
+        # Permission sets: read directly from S3 JSON (fast path, no Athena needed)
+        if query_type == "permission_sets":
+            snapshot_date = _get_snapshot_date(event)
+            force_refresh = _is_force_refresh(event)
+            return _handle_permission_sets(snapshot_date, force_refresh)
 
         # Extract snapshot date (if provided)
         snapshot_date = _get_snapshot_date(event)
@@ -303,20 +316,19 @@ def _is_force_refresh(event):
     params = event.get("queryStringParameters") or {}
     return params.get("force", "").lower() == "true"
 
-def _get_available_dates():
+def _get_available_dates(prefix="assignments/snapshot_date="):
     """List out snapshot dates directly from S3 by finding common prefixes."""
     try:
         response = s3.list_objects_v2(
             Bucket=INVENTORY_BUCKET,
-            Prefix="assignments/snapshot_date=",
+            Prefix=prefix,
             Delimiter="/"
         )
         prefixes = response.get("CommonPrefixes", [])
         
         dates = []
-        for prefix in prefixes:
-            # prefix is like "assignments/snapshot_date=2024-03-01/"
-            match = re.search(r"snapshot_date=(\d{4}-\d{2}-\d{2})", prefix["Prefix"])
+        for p in prefixes:
+            match = re.search(r"snapshot_date=(\d{4}-\d{2}-\d{2})", p["Prefix"])
             if match:
                 dates.append(match.group(1))
         
@@ -325,6 +337,67 @@ def _get_available_dates():
     except Exception as exc:
         logger.error(f"Failed to fetch dates from S3: {exc}")
         return []
+
+
+def _handle_permission_sets(snapshot_date, force_refresh):
+    """Handle permission sets request — reads JSON directly from S3."""
+    cache_key = f"ps_summary_{snapshot_date}.json" if snapshot_date else "ps_summary.json"
+
+    # Check cache first
+    if not force_refresh:
+        try:
+            cached_resp = s3.get_object(Bucket=CACHE_BUCKET, Key=cache_key)
+            last_modified = cached_resp["LastModified"]
+            age = (datetime.now(timezone.utc) - last_modified).total_seconds()
+            if age <= CACHE_MAX_AGE_SECONDS:
+                logger.info("Permission sets cache hit")
+                body = cached_resp["Body"].read().decode("utf-8")
+                return _response(200, json.loads(body))
+        except Exception:
+            pass
+
+    # Determine target date
+    if not snapshot_date:
+        dates = _get_available_dates(prefix="permission_sets/snapshot_date=")
+        snapshot_date = dates[0] if dates else None
+
+    if not snapshot_date:
+        return _response(200, {"permission_sets": [], "snapshot_date": None})
+
+    # Read JSON Lines from S3
+    s3_key = f"permission_sets/snapshot_date={snapshot_date}/permission_sets.json"
+    try:
+        obj = s3.get_object(Bucket=INVENTORY_BUCKET, Key=s3_key)
+        raw = obj["Body"].read().decode("utf-8")
+        records = [json.loads(line) for line in raw.strip().split("\n") if line.strip()]
+    except s3.exceptions.NoSuchKey:
+        logger.info(f"No permission sets data for {snapshot_date}")
+        records = []
+    except Exception as exc:
+        logger.error(f"Failed to read permission sets from S3: {exc}")
+        records = []
+
+    result = {
+        "snapshot_date": snapshot_date,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "permission_sets": records,
+        "stats": {
+            "total_permission_sets": len(records),
+        },
+    }
+
+    # Cache result
+    try:
+        s3.put_object(
+            Bucket=CACHE_BUCKET,
+            Key=cache_key,
+            Body=json.dumps(result, default=str).encode("utf-8"),
+            ContentType="application/json",
+        )
+    except Exception as exc:
+        logger.warning(f"Failed to cache permission sets: {exc}")
+
+    return _response(200, result)
 
 def _response(status_code, body, event=None):
     """Build a Lambda Function URL response with JSON body.

@@ -110,6 +110,100 @@ resource "aws_glue_catalog_table" "assignments" {
   }
 }
 
+# Glue Table — Permission Sets (JSON SerDe)
+resource "aws_glue_catalog_table" "permission_sets" {
+  name          = "permission_sets"
+  database_name = aws_glue_catalog_database.main.name
+
+  table_type = "EXTERNAL_TABLE"
+
+  parameters = {
+    "classification"                        = "json"
+    "projection.enabled"                    = "true"
+    "projection.snapshot_date.type"         = "date"
+    "projection.snapshot_date.format"       = "yyyy-MM-dd"
+    "projection.snapshot_date.range"        = "2024-01-01,NOW"
+    "projection.snapshot_date.interval"     = "1"
+    "projection.snapshot_date.interval.unit" = "DAYS"
+    "storage.location.template"            = "s3://${aws_s3_bucket.inventory.id}/permission_sets/snapshot_date=$${snapshot_date}/"
+  }
+
+  partition_keys {
+    name = "snapshot_date"
+    type = "string"
+  }
+
+  storage_descriptor {
+    location      = "s3://${aws_s3_bucket.inventory.id}/permission_sets/"
+    input_format  = "org.apache.hadoop.mapred.TextInputFormat"
+    output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+
+    ser_de_info {
+      serialization_library = "org.openx.data.jsonserde.JsonSerDe"
+
+      parameters = {
+        "dots.in.keys" = "false"
+        "case.insensitive" = "true"
+      }
+    }
+
+    columns {
+      name = "name"
+      type = "string"
+    }
+
+    columns {
+      name = "arn"
+      type = "string"
+    }
+
+    columns {
+      name = "description"
+      type = "string"
+    }
+
+    columns {
+      name = "session_duration"
+      type = "string"
+    }
+
+    columns {
+      name = "created_date"
+      type = "string"
+    }
+
+    columns {
+      name = "aws_managed_policies"
+      type = "array<struct<name:string,arn:string>>"
+    }
+
+    columns {
+      name = "customer_managed_policies"
+      type = "array<struct<name:string,path:string>>"
+    }
+
+    columns {
+      name = "inline_policy"
+      type = "string"
+    }
+
+    columns {
+      name = "permissions_boundary"
+      type = "struct<managed_policy_arn:string,customer_managed_policy_reference:struct<name:string,path:string>>"
+    }
+
+    columns {
+      name = "tags"
+      type = "array<struct<key:string,value:string>>"
+    }
+
+    columns {
+      name = "provisioned_accounts"
+      type = "int"
+    }
+  }
+}
+
 # Named query for quick reference
 resource "aws_athena_named_query" "all_assignments" {
   name      = "${var.resource_prefix}-all-assignments"
