@@ -16,6 +16,7 @@
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Features](#features)
+- [Dashboard Usage](#dashboard-usage)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Okta SSO Setup](#okta-sso-setup)
@@ -87,15 +88,45 @@ flowchart TD
 | Feature | Description |
 |---------|-------------|
 | 🏢 **Full Org Crawl** | Discovers all accounts in your AWS Organization and audits IAM Identity Center assignments |
-| 🔒 **Permission Set Details** | Crawls every permission set — AWS managed policies, customer managed policies, inline policies, permissions boundaries, session duration, tags |
+| 🔒 **Permission Set Details** | Crawls every permission set — AWS managed policies, customer managed policies, inline policies, permissions boundaries, session duration, tags, description, and provisioning status |
 | ⚡ **Distributed Processing** | Step Functions Distributed Map runs one Lambda per account in parallel |
 | 👤 **User & Group Resolution** | Resolves GUIDs to friendly names, emails, and expanded group memberships |
 | 🚀 **Fast-Load Cache** | Athena Proxy serves pre-rendered `summary.json` from S3 before falling back to SQL |
 | 🔐 **SSO-Secured Frontend** | React dashboard protected by Okta OIDC — falls back to local auth for development |
+| 📊 **Interactive Permission Sets Table** | Resizable columns, sorting, search, and colour-coded policy labels (AWS managed vs. customer managed) |
+| 📤 **Export** | Export the full Permission Sets table to **CSV** or **PDF** with a single click |
+| 🔗 **AWS Console Deep Links** | Each permission set name links directly to its detail page in the AWS IAM Identity Center console |
+| 🗺️ **Access Heatmap** | Visualises principal-count per account × permission set matrix with a colour intensity scale |
 | 💰 **Cost-Optimized** | No Glue Crawlers, auto-expiry lifecycle policies, fully serverless |
 | 🛡️ **Security Hardened** | AES-256 encryption at rest, CloudFront OAC, input validation, IAM least-privilege |
 
 ---
+
+## Dashboard Usage
+
+The dashboard has two main tabs:
+
+### Assignments Tab
+
+Shows every SSO assignment in your organisation — which principal (user or group) has which permission set in which account. Key interactions:
+
+- **Search & filter** by principal name, account, or permission set using the toolbar.
+- **Access Heatmap** at the bottom shows principal counts per account × permission set — hover a cell for exact numbers and click-through to find the assignments.
+- **Export** the visible assignments to CSV or PDF via the export dropdown.
+
+### Permission Sets Tab
+
+Provides a full breakdown of every permission set configuration. Key interactions:
+
+- **Columns:** Name (with AWS Console link), Description, Provisioned (account count), Session Duration, Policies (AWS managed + customer managed), Boundary (permissions boundary), Inline Policy (expandable JSON viewer), Tags.
+- **Policy labels:** AWS managed policies appear as blue links to the official AWS documentation; customer managed policies are highlighted with a yellow badge.
+- **Permissions Boundary:** displayed with the same colour-coding as policies — orange badge for customer managed, blue link for AWS managed.
+- **Inline Policy:** click the `{ }` button on any row to expand a syntax-highlighted JSON viewer inline.
+- **Resizable columns:** drag the divider on any column header to resize it.
+- **Legend bar** below the table header explains colour-coding and available interactions.
+- **Export:** click the **Export** button in the toolbar to download a CSV or PDF of the full table.
+- **AWS Console link:** click any permission set name to open its detail page directly in the AWS IAM Identity Center console.
+
 
 ## Prerequisites
 
