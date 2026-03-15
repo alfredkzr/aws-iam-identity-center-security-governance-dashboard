@@ -1,0 +1,210 @@
+/* ================================================================
+   SettingsTab — Single-column layout
+   ================================================================ */
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.settings-container {
+    padding: var(--space-xxl, 1.5rem) var(--space-xl, 1.25rem);
+    animation: fadeUp 0.4s ease-out;
+}
+
+.settings-main {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xxl, 1.5rem);
+}
+
+/* ---- Section ---- */
+.settings-section {
+    animation: fadeUp 0.35s ease-out both;
+}
+
+.settings-section__header {
+    margin-bottom: var(--space-l, 1rem);
+}
+
+.settings-section__title {
+    font-size: var(--font-xl, 1.125rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+}
+
+.settings-section__desc {
+    font-size: var(--font-sm, 0.875rem);
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ---- Group (card wrapper for rows) ---- */
+.settings-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-l, 8px);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+/* ---- Setting Row ---- */
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-divider, var(--border-default));
+    gap: 16px;
+}
+
+.settings-row:last-child {
+    border-bottom: none;
+}
+
+.settings-row--info {
+    padding: 12px 20px;
+}
+
+.settings-row__label-group {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-row__label {
+    font-size: var(--font-sm, 0.875rem);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.settings-row__desc {
+    font-size: var(--font-xs, 0.75rem);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.settings-row__control {
+    flex-shrink: 0;
+}
+
+.settings-row__value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-sm, 0.875rem);
+    color: var(--text-secondary);
+}
+
+/* ---- Theme Picker ---- */
+.settings-theme-picker {
+    display: flex;
+    gap: 6px;
+    background: var(--bg-page, #f2f3f3);
+    border-radius: var(--radius-m, 6px);
+    padding: 3px;
+}
+
+.settings-theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: var(--radius-s, 4px);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--font-sm, 0.875rem);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.settings-theme-btn:hover {
+    color: var(--text-primary);
+}
+
+.settings-theme-btn--active {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-weight: 600;
+}
+
+/* ---- Profile Card ---- */
+.settings-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-divider, var(--border-default));
+}
+
+.settings-profile-card__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--aws-blue, #0073bb);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.settings-profile-card__info {
+    min-width: 0;
+}
+
+.settings-profile-card__name {
+    font-size: var(--font-base, 0.875rem);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.settings-profile-card__email {
+    font-size: var(--font-sm, 0.875rem);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* ---- Badges ---- */
+.settings-badge {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.settings-badge--active,
+.settings-badge--connected {
+    background: var(--aws-green, #1d8102);
+}
+
+.settings-badge--inactive,
+.settings-badge--demo {
+    background: var(--text-muted, #687078);
+}
+
+/* ---- Mono text ---- */
+.settings-mono {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: var(--font-xs, 0.75rem);
+    word-break: break-all;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: var(--space-xl, 1.25rem);
+    }
+
+    .settings-main {
+        max-width: none;
+    }
+}
