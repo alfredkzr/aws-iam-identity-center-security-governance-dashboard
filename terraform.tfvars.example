@@ -58,16 +58,10 @@ identity_store_id = "d-xxxxxxxxxx"
 # -------------------------------------------------------
 # OPTIONAL — Azure AD / Entra ID SSO (frontend authentication)
 # -------------------------------------------------------
-# NOTE: Configure only ONE identity provider (Okta, Azure AD, or Google).
+# NOTE: Configure only ONE identity provider (Okta or Azure AD).
 
 # azure_tenant_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 # azure_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-
-# -------------------------------------------------------
-# OPTIONAL — Google Workspace SSO (frontend authentication)
-# -------------------------------------------------------
-
-# google_client_id = "xxxxxxxxxxxx-xxx.apps.googleusercontent.com"
 
 # -------------------------------------------------------
 # OPTIONAL — Local Auth (when Okta is not configured)

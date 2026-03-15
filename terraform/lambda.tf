@@ -13,7 +13,6 @@ locals {
   oidc_userinfo_url = (
     var.okta_domain != "" ? "https://${var.okta_domain}/oauth2/default/v1/userinfo" :
     var.azure_tenant_id != "" ? "https://graph.microsoft.com/oidc/userinfo" :
-    var.google_client_id != "" ? "https://openidconnect.googleapis.com/v1/userinfo" :
     ""
   )
 

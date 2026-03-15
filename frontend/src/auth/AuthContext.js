@@ -26,16 +26,6 @@ const OIDC_PROVIDERS = {
         logoutUrl: (tenantId) => `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout`,
         scopes: 'openid profile email',
     },
-    google: {
-        name: 'Google',
-        domain: '',
-        clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID || '',
-        isConfigured: () => Boolean(process.env.REACT_APP_GOOGLE_CLIENT_ID),
-        authorizeUrl: () => 'https://accounts.google.com/o/oauth2/v2/auth',
-        tokenUrl: () => 'https://oauth2.googleapis.com/token',
-        logoutUrl: () => null,
-        scopes: 'openid profile email',
-    },
 };
 
 function detectProvider() {

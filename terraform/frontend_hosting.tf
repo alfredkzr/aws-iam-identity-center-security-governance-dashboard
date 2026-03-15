@@ -190,7 +190,6 @@ resource "null_resource" "frontend_deploy" {
       REACT_APP_OKTA_CLIENT_ID       = var.okta_client_id
       REACT_APP_AZURE_TENANT_ID      = var.azure_tenant_id
       REACT_APP_AZURE_CLIENT_ID      = var.azure_client_id
-      REACT_APP_GOOGLE_CLIENT_ID     = var.google_client_id
       REACT_APP_LOCAL_ADMIN_USERNAME = var.local_admin_username
       REACT_APP_LOCAL_ADMIN_PASSWORD = var.local_admin_password
       REACT_APP_LOCAL_API_KEY        = local.oidc_enabled ? "" : local.effective_api_key

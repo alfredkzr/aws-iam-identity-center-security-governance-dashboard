@@ -135,17 +135,7 @@ variable "azure_client_id" {
 }
 
 # -----------------------------------------------------------------------------
-# Google Workspace SSO Configuration (for frontend auth)
-# -----------------------------------------------------------------------------
-
-variable "google_client_id" {
-  description = "Google OIDC client ID for SSO authentication"
-  type        = string
-  default     = ""
-}
-
-# -----------------------------------------------------------------------------
-# Local Auth Configuration (when Okta is not configured)
+# Local Auth Configuration (when no IdP is configured)
 # -----------------------------------------------------------------------------
 
 variable "local_admin_username" {
