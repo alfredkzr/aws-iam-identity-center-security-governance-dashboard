@@ -128,8 +128,7 @@ export default function AuditTrailTab({ apiFetch, apiEndpoint }) {
         return {
             total: events.length,
             assignments: events.filter(e => assignmentNames.has(e.eventname)).length,
-            permissionSets: events.filter(e => !assignmentNames.has(e.eventname) && !e.errorcode).length,
-            errors: events.filter(e => e.errorcode).length,
+            permissionSets: events.filter(e => !assignmentNames.has(e.eventname)).length,
         };
     }, [events]);
 
@@ -188,10 +187,6 @@ export default function AuditTrailTab({ apiFetch, apiEndpoint }) {
                 <div className="audit-stat-card audit-stat-card--permsets">
                     <div className="audit-stat-card__value">{stats.permissionSets}</div>
                     <div className="audit-stat-card__label">Permission Set Changes</div>
-                </div>
-                <div className="audit-stat-card audit-stat-card--errors">
-                    <div className="audit-stat-card__value">{stats.errors}</div>
-                    <div className="audit-stat-card__label">Errors</div>
                 </div>
             </div>
 

@@ -180,19 +180,15 @@ function AppContent() {
         }
     }, [handleOidcCallback]);
 
-    // Fetch data once authenticated
+    // Fetch data once authenticated (assignments + permission sets for risk column)
     useEffect(() => {
         if (isAuthenticated && data === null) {
             fetchData();
         }
-    }, [isAuthenticated, fetchData, data]);
-
-    // Fetch permission sets when user switches to that tab
-    useEffect(() => {
-        if (isAuthenticated && activeTab === 'permission_sets' && psData === null) {
+        if (isAuthenticated && psData === null) {
             fetchPermissionSets();
         }
-    }, [isAuthenticated, activeTab, fetchPermissionSets, psData]);
+    }, [isAuthenticated, fetchData, data, fetchPermissionSets, psData]);
 
     // Fetch risk policies when user switches to security tab
     const fetchRiskPolicies = useCallback(async () => {
