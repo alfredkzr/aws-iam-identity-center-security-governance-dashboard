@@ -8,7 +8,7 @@ const RISK_CONFIG = {
     critical: { label: 'Critical', color: '#dc2626', bg: '#fef2f2', border: '#fecaca', icon: '🔴' },
     high:     { label: 'High',     color: '#ea580c', bg: '#fff7ed', border: '#fed7aa', icon: '🟠' },
     medium:   { label: 'Medium',   color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '🟡' },
-    low:      { label: 'Low',      color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb', icon: '🟢' },
+    low:      { label: 'No Issues', color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb', icon: '✅' },
 };
 
 const RULE_TYPES = [
@@ -219,7 +219,7 @@ export default function SecurityTab({
                         <div className="security-stat-card__icon">{config.icon}</div>
                         <div className="security-stat-card__content">
                             <span className="security-stat-card__value">{riskStats[level]}</span>
-                            <span className="security-stat-card__label">{config.label} Risk</span>
+                            <span className="security-stat-card__label">{level === 'low' ? config.label : `${config.label} Risk`}</span>
                         </div>
                     </div>
                 ))}
