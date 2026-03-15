@@ -110,7 +110,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["content-type", "x-api-key"]
+      headers      = ["content-type", "x-api-key", "x-auth-token"]
 
       cookies {
         forward = "none"
@@ -184,8 +184,8 @@ resource "null_resource" "frontend_deploy" {
   provisioner "local-exec" {
     working_dir = "${path.module}/../frontend"
     environment = {
-      REACT_APP_API_ENDPOINT = "https://${aws_cloudfront_distribution.frontend.domain_name}/api"
-      REACT_APP_AWS_REGION   = var.aws_region
+      REACT_APP_API_ENDPOINT   = "https://${aws_cloudfront_distribution.frontend.domain_name}/api"
+      REACT_APP_AWS_REGION     = var.aws_region
       REACT_APP_OKTA_DOMAIN    = var.okta_domain
       REACT_APP_OKTA_CLIENT_ID = var.okta_client_id
     }

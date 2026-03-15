@@ -7,11 +7,15 @@ Handles frontend requests for assignment data:
   3. Caches the results for subsequent requests
 """
 
+import base64
+import hashlib
 import json
 import logging
 import os
 import re
 import time
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 
 import boto3
@@ -29,6 +33,7 @@ ATHENA_DATABASE = os.environ.get("ATHENA_DATABASE", "")
 ATHENA_TABLE = os.environ.get("ATHENA_TABLE", "assignments")
 ATHENA_PERMISSION_SETS_TABLE = os.environ.get("ATHENA_PERMISSION_SETS_TABLE", "permission_sets")
 ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
+OKTA_DOMAIN = os.environ.get("OKTA_DOMAIN", "")
 
 RISK_POLICIES_KEY = "risk-policies.json"
 
@@ -53,9 +58,84 @@ athena = boto3.client("athena", config=boto_config)
 s3 = boto3.client("s3", config=boto_config)
 
 
+# Module-level cache for validated tokens: {token_hash: expiry_timestamp}
+_token_cache = {}
+_TOKEN_CACHE_MAX = 200
+
+
+def _validate_token(event):
+    """Validate the Okta access token by calling Okta's /userinfo endpoint.
+
+    This delegates cryptographic signature verification to Okta's server,
+    requiring no external Python dependencies (uses only urllib from stdlib).
+
+    Validated tokens are cached in-memory (keyed by SHA-256 hash) until their
+    exp claim, so repeated requests with the same token avoid network calls.
+
+    Returns (True, payload) on success or (False, error_message) on failure.
+    Skips validation entirely when OKTA_DOMAIN is not configured (local dev).
+    """
+    if not OKTA_DOMAIN:
+        return True, None
+
+    headers = event.get("headers") or {}
+    token = headers.get("x-auth-token", "")
+    if not token:
+        return False, "Missing X-Auth-Token header"
+
+    # Check in-memory cache first (avoids network call for repeat requests)
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    cached_exp = _token_cache.get(token_hash)
+    if cached_exp and time.time() < cached_exp:
+        return True, {"cached": True}
+
+    # Validate token via Okta's userinfo endpoint (Okta verifies the signature)
+    try:
+        userinfo_url = f"https://{OKTA_DOMAIN}/oauth2/default/v1/userinfo"
+        req = urllib.request.Request(
+            userinfo_url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            userinfo = json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        logger.warning(f"Okta userinfo returned {e.code}")
+        return False, "Invalid or expired token"
+    except Exception as e:
+        logger.warning(f"Okta userinfo call failed: {e}")
+        return False, "Token validation failed"
+
+    # Extract expiry from the token for caching (best-effort decode)
+    cache_ttl = 300  # default 5-minute cache if we can't read exp
+    try:
+        parts = token.split(".")
+        if len(parts) == 3:
+            payload_b64 = parts[1] + "=" * (4 - len(parts[1]) % 4)
+            payload = json.loads(base64.urlsafe_b64decode(payload_b64))
+            exp = payload.get("exp", 0)
+            if exp > time.time():
+                cache_ttl = exp - time.time()
+    except Exception:
+        pass
+
+    # Evict oldest entries if cache is full
+    if len(_token_cache) >= _TOKEN_CACHE_MAX:
+        _token_cache.clear()
+
+    _token_cache[token_hash] = time.time() + min(cache_ttl, 3600)
+
+    return True, userinfo
+
+
 def lambda_handler(event, context):
     """Main entry point — returns assignment data as JSON with CORS headers."""
     try:
+        # Validate authentication when Okta is configured
+        valid, token_result = _validate_token(event)
+        if not valid:
+            logger.warning(f"Auth rejected: {token_result}")
+            return _response(401, {"error": "Unauthorized"})
+
         # Determine the query type from the request
         query_type = _get_query_type(event)
         logger.info(f"Request query_type={query_type}")

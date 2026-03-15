@@ -8,6 +8,18 @@ import LoginPage from './components/LoginPage';
 
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT || '';
 
+/** Wraps fetch() to attach the Okta access token via a custom header.
+ *  Uses X-Auth-Token instead of Authorization because CloudFront OAC
+ *  replaces the Authorization header with its own SigV4 signature. */
+function apiFetch(url, options = {}) {
+    const token = sessionStorage.getItem('access_token');
+    const headers = { ...options.headers };
+    if (token) {
+        headers['X-Auth-Token'] = token;
+    }
+    return fetch(url, { ...options, headers });
+}
+
 function AppContent() {
     const { user, isAuthenticated, loading: authLoading, logout, handleOktaCallback } = useAuth();
 
@@ -39,7 +51,7 @@ function AppContent() {
         try {
             if (API_ENDPOINT) {
                 // Always fetch latest available dates
-                const datesResponse = await fetch(`${API_ENDPOINT}?type=dates${force ? '&force=true' : ''}`);
+                const datesResponse = await apiFetch(`${API_ENDPOINT}?type=dates${force ? '&force=true' : ''}`);
                 let dates = [];
                 if (datesResponse.ok) {
                     const datesResult = await datesResponse.json();
@@ -52,7 +64,7 @@ function AppContent() {
 
                 // Fetch assignments for target date
                 const url = `${API_ENDPOINT}?type=all${targetDate ? `&date=${targetDate}` : ''}${force ? '&force=true' : ''}`;
-                const response = await fetch(url);
+                const response = await apiFetch(url);
                 if (!response.ok) throw new Error(`API returned ${response.status}`);
                 const result = await response.json();
 
@@ -101,7 +113,7 @@ function AppContent() {
         try {
             if (API_ENDPOINT) {
                 // Fetch available dates for permission sets
-                const datesResponse = await fetch(`${API_ENDPOINT}?type=permission_sets_dates${force ? '&force=true' : ''}`);
+                const datesResponse = await apiFetch(`${API_ENDPOINT}?type=permission_sets_dates${force ? '&force=true' : ''}`);
                 let dates = [];
                 if (datesResponse.ok) {
                     const datesResult = await datesResponse.json();
@@ -112,7 +124,7 @@ function AppContent() {
                 const targetDate = dateToFetch || (dates.length > 0 ? dates[0] : '');
 
                 const url = `${API_ENDPOINT}?type=permission_sets${targetDate ? `&date=${targetDate}` : ''}${force ? '&force=true' : ''}`;
-                const response = await fetch(url);
+                const response = await apiFetch(url);
                 if (!response.ok) throw new Error(`API returned ${response.status}`);
                 const result = await response.json();
 
@@ -179,7 +191,7 @@ function AppContent() {
         setRiskLoading(true);
         try {
             if (API_ENDPOINT) {
-                const response = await fetch(`${API_ENDPOINT}?type=risk_policies`);
+                const response = await apiFetch(`${API_ENDPOINT}?type=risk_policies`);
                 if (response.ok) {
                     const result = await response.json();
                     setRiskPolicies(result.policies || null);
@@ -197,14 +209,14 @@ function AppContent() {
         if (API_ENDPOINT) {
             if (policies === null) {
                 // Reset to defaults — delete the custom file by saving defaults
-                const response = await fetch(`${API_ENDPOINT}?type=risk_policies`);
+                const response = await apiFetch(`${API_ENDPOINT}?type=risk_policies`);
                 const result = await response.json();
                 // Just re-fetch to get defaults
                 setRiskPolicies(result.policies || null);
                 setRiskSource('default');
                 return;
             }
-            const response = await fetch(`${API_ENDPOINT}?type=save_risk_policies`, {
+            const response = await apiFetch(`${API_ENDPOINT}?type=save_risk_policies`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(policies),
