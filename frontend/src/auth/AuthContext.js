@@ -13,7 +13,12 @@ const OKTA_ENABLED = Boolean(OKTA_DOMAIN && OKTA_CLIENT_ID);
 
 // Local fallback credentials (when Okta is not configured)
 const LOCAL_USERS = [
-    { username: 'admin', password: 'admin123', name: 'Admin User', email: 'admin@local' },
+    {
+        username: process.env.REACT_APP_LOCAL_ADMIN_USERNAME || 'admin',
+        password: process.env.REACT_APP_LOCAL_ADMIN_PASSWORD || 'admin123',
+        name: 'Admin User',
+        email: 'admin@local',
+    },
 ];
 
 /* ================================================================

@@ -117,3 +117,20 @@ variable "okta_client_id" {
   type        = string
   default     = ""
 }
+
+# -----------------------------------------------------------------------------
+# Local Auth Configuration (when Okta is not configured)
+# -----------------------------------------------------------------------------
+
+variable "local_admin_username" {
+  description = "Username for local dashboard login (only used when Okta is not configured)"
+  type        = string
+  default     = "admin"
+}
+
+variable "local_admin_password" {
+  description = "Password for local dashboard login (only used when Okta is not configured)"
+  type        = string
+  default     = "admin123"
+  sensitive   = true
+}

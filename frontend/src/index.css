@@ -210,6 +210,24 @@ body {
   box-shadow: var(--shadow-sticky);
 }
 
+.demo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--aws-orange-light, #fef8f0);
+  border-bottom: 1px solid var(--aws-orange, #ec7211);
+  color: var(--aws-orange-dark, #8a4b08);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .demo-banner {
+  background: rgba(255, 153, 0, 0.08);
+  color: #f0c06e;
+}
+
 .tab-nav__inner {
   display: flex;
   gap: 0;

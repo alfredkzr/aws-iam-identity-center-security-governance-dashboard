@@ -54,3 +54,10 @@ identity_store_id = "d-xxxxxxxxxx"
 # okta_domain       = "your-org.okta.com"
 # okta_client_id    = "0oaXXXXXXXXXXXXXXXX"
 # Note: okta_redirect_uri is auto-derived from the CloudFront domain — no need to set it.
+
+# -------------------------------------------------------
+# OPTIONAL — Local Auth (when Okta is not configured)
+# -------------------------------------------------------
+
+# local_admin_username = "admin"
+# local_admin_password = "admin123"

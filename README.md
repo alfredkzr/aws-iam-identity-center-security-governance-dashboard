@@ -261,19 +261,28 @@ The dashboard will populate within **1-3 minutes**. Subsequent crawls run automa
 
 ### 5. Access the Dashboard
 
-Open the `frontend_url` from the Terraform output. Without Okta configured, use the development credentials:
+Open the `frontend_url` from the Terraform output. Without Okta configured, use the default local credentials:
 
 - **Username:** `admin`
 - **Password:** `admin123`
 
-> **Warning:** Always configure Okta SSO or remove the local auth fallback before exposing the dashboard publicly. See [Okta SSO Setup](#okta-sso-setup).
+To use custom credentials, set them in `terraform/terraform.tfvars`:
+
+```hcl
+local_admin_username = "myuser"
+local_admin_password = "mysecurepassword"
+```
+
+Then redeploy with `terraform apply`.
+
+> **Warning:** Always configure Okta SSO or change the default credentials before exposing the dashboard publicly. See [Okta SSO Setup](#okta-sso-setup).
 
 ---
 
 ## Okta SSO Setup
 
 > [!IMPORTANT]
-> **Without Okta configured**, the dashboard uses local auth mode with hardcoded credentials (`admin` / `admin123`). This is for development only. **Always configure Okta or remove the fallback before production use.**
+> **Without Okta configured**, the dashboard uses local auth mode with default credentials (`admin` / `admin123`). You can customise these via the `local_admin_username` and `local_admin_password` Terraform variables or `REACT_APP_LOCAL_ADMIN_USERNAME` / `REACT_APP_LOCAL_ADMIN_PASSWORD` env vars. **Always configure Okta or change the defaults before production use.**
 
 ### 1. Create an Okta Application
 
@@ -345,6 +354,8 @@ REACT_APP_OKTA_REDIRECT_URI=http://localhost:3000/callback
 | `environment` | `string` | `"production"` | Environment tag |
 | `okta_domain` | `string` | `""` | Okta domain (e.g. `your-org.okta.com`) |
 | `okta_client_id` | `string` | `""` | Okta OIDC client ID |
+| `local_admin_username` | `string` | `"admin"` | Username for local dashboard login (when Okta is not configured) |
+| `local_admin_password` | `string` | `"admin123"` | Password for local dashboard login (when Okta is not configured, sensitive) |
 
 ### Schedule & Lifecycle
 
@@ -437,7 +448,7 @@ The default deployment includes these security controls out of the box:
 | Action | Why | How |
 |--------|-----|-----|
 | **Configure Okta SSO** | Replace local demo credentials with production IdP | See [Okta SSO Setup](#okta-sso-setup) |
-| **Remove local auth fallback** | Eliminate hardcoded `admin/admin123` credentials | Delete `LOCAL_USERS` and `loginLocal` in `frontend/src/auth/AuthContext.js` |
+| **Change default credentials** | Replace default `admin/admin123` with strong credentials | Set `local_admin_username` and `local_admin_password` in `terraform/terraform.tfvars` |
 | **Attach AWS WAFv2** | Protect against DDoS, bots, OWASP Top 10 | Create `aws_wafv2_web_acl` with AWS Managed Rules, associate with CloudFront |
 | **Add custom domain + TLS** | Replace `*.cloudfront.net` with your branded domain | ACM certificate in `us-east-1` + Route 53 alias + `viewer_certificate` block |
 | **Enable geo-restriction** | Limit access to operating regions | `restrictions.geo_restriction` in CloudFront |
@@ -658,7 +669,7 @@ npm install
 npm start              # Dev server at http://localhost:3000
 ```
 
-> Without Okta env vars, local auth is used. Default credentials: `admin` / `admin123`
+> Without Okta env vars, local auth is used. Default credentials: `admin` / `admin123`. Customise via `REACT_APP_LOCAL_ADMIN_USERNAME` / `REACT_APP_LOCAL_ADMIN_PASSWORD` in `frontend/.env` (see `frontend/.env.example`).
 
 **Backend (Python Lambdas):**
 
