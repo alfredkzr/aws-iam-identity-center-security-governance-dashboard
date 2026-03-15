@@ -1,7 +1,9 @@
 # Security Governance Dashboard
 
 > **A serverless, open-source dashboard to audit IAM Identity Center (SSO) permission assignments and permission set configurations across your entire AWS Organization — deployed in minutes with Terraform.**
-<img width="2056" height="1163" alt="image" src="https://github.com/user-attachments/assets/51660a53-8f0b-41e1-a72b-9162856657df" />
+<p align="center">
+  <img src="assets/demo.png" alt="Dashboard Demo" width="100%" />
+</p>
 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
