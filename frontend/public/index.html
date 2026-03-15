@@ -6,10 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0a0e1a" />
   <meta name="description"
-    content="Security Governance Dashboard — Audit SSO assignments and risks across your AWS Organization" />
+    content="AWS IAM Identity Center - Security Governance Dashboard — Audit SSO assignments and risks across your AWS Organization" />
   <link rel="icon" href="%PUBLIC_URL%/favicon.svg" type="image/svg+xml" />
-  <title>Security Governance Dashboard</title>
+  <title>AWS IAM Identity Center - Security Governance Dashboard</title>
   <link rel="stylesheet" href="https://a0.awsstatic.com/fonts/css/amazon-ember.css" />
+  <script>
+    (function() {
+      var theme = localStorage.getItem('theme-preference');
+      if (!theme) {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 
 <body>

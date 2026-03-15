@@ -86,6 +86,84 @@
 }
 
 /* ================================================================
+   Dark Theme
+   ================================================================ */
+
+[data-theme="dark"] {
+  --aws-squid-ink: #1c2433;
+  --aws-squid-ink-light: #2d3748;
+  --aws-squid-ink-dark: #0d1117;
+  --aws-orange: #f0993e;
+  --aws-orange-hover: #e8872a;
+  --aws-orange-light: #2a1f0e;
+  --aws-blue: #58a6ff;
+  --aws-blue-hover: #79b8ff;
+  --aws-blue-light: #0d2240;
+  --aws-green: #3fb950;
+  --aws-green-light: #0d2a16;
+  --aws-red: #f85149;
+  --aws-red-light: #2d1214;
+  --aws-yellow: #d29922;
+  --aws-yellow-light: #2a2111;
+
+  --bg-page: #0d1117;
+  --bg-card: #161b22;
+  --bg-header: #010409;
+  --bg-input: #0d1117;
+  --bg-hover: #1c2128;
+  --bg-active: #282e36;
+  --bg-selected: #0d2240;
+
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --text-disabled: #484f58;
+  --text-inverse: #e6edf3;
+  --text-link: var(--aws-blue);
+  --text-link-hover: var(--aws-blue-hover);
+
+  --border-default: #30363d;
+  --border-input: #3d444d;
+  --border-divider: #21262d;
+  --border-focus: var(--aws-blue);
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-sticky: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Theme transition */
+body,
+.tab-nav,
+.stat-card,
+.ps-stat-card,
+.dashboard__toolbar,
+.ps-toolbar,
+.dashboard__table-wrapper,
+.ps-table-wrapper,
+.chart-panel,
+.chart-panel--wide,
+.security-panel,
+.security-stat-card,
+.header__dropdown,
+.header__dropdown-item,
+.export-dropdown__menu,
+.login-card,
+.toolbar__input,
+.toolbar__filters,
+.toolbar__snapshot-selector,
+.pagination__btn,
+.pagination__select,
+.security-btn,
+.security-export-dropdown__trigger,
+.security-export-dropdown__menu,
+.security-rules-pagination,
+.security-rules-table select,
+.security-rules-table input[type="text"] {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* ================================================================
    Reset & Base
    ================================================================ */
 

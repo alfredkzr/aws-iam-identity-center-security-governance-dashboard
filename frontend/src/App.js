@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './auth/AuthContext';
+import useTheme from './hooks/useTheme';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import PermissionSetsTable from './components/PermissionSetsTable';
@@ -22,6 +23,7 @@ function apiFetch(url, options = {}) {
 
 function AppContent() {
     const { user, isAuthenticated, loading: authLoading, logout, handleOktaCallback } = useAuth();
+    const { theme, toggleTheme } = useTheme();
 
     // Tab state
     const [activeTab, setActiveTab] = useState('assignments');
@@ -244,9 +246,9 @@ function AppContent() {
     // Show loading while auth is initializing
     if (authLoading) {
         return (
-            <div className="app" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f2f3f3' }}>
-                <div style={{ textAlign: 'center', color: '#687078' }}>
-                    <div className="loading-spinner" style={{ width: 32, height: 32, border: '3px solid #eaeded', borderTop: '3px solid #0073bb', borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 600ms linear infinite' }} />
+            <div className="app" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)' }}>
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <div className="loading-spinner" style={{ width: 32, height: 32, border: '3px solid var(--border-divider)', borderTop: '3px solid var(--aws-blue)', borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 600ms linear infinite' }} />
                     Authenticating…
                 </div>
             </div>
@@ -260,7 +262,7 @@ function AppContent() {
 
     return (
         <div className="app">
-            <Header user={user} onLogout={logout} />
+            <Header user={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />
 
             {/* Tab Navigation */}
             <nav className="tab-nav" id="tab-navigation">

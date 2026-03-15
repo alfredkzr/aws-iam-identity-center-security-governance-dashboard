@@ -16,11 +16,6 @@ const RULE_TYPES = [
     { value: 'inline_policy_action', label: 'Inline Policy Action' },
 ];
 
-const MATCH_TYPES = [
-    { value: 'exact', label: 'Exact' },
-    { value: 'wildcard', label: 'Wildcard' },
-];
-
 const RISK_LEVELS = [
     { value: 'critical', label: 'Critical' },
     { value: 'high', label: 'High' },
@@ -115,7 +110,7 @@ export default function SecurityTab({
         setEditingRules(prev => {
             const updated = [
                 ...(prev || []),
-                { type: 'managed_policy_name', pattern: '', match: 'exact', risk: 'medium', reason: '' },
+                { type: 'managed_policy_name', pattern: '', risk: 'medium', reason: '' },
             ];
             // Navigate to last page to show the new rule
             const newTotalPages = Math.max(1, Math.ceil(updated.length / pageSize));
@@ -170,11 +165,10 @@ export default function SecurityTab({
 
     /* ---- Export functions ---- */
     const exportRulesCSV = () => {
-        const headers = ['Type', 'Pattern', 'Match Type', 'Risk Level', 'Reason'];
+        const headers = ['Type', 'Pattern', 'Risk Level', 'Reason'];
         const rows = currentRules.map(r => [
             r.type || '',
             r.pattern || '',
-            r.match || '',
             r.risk || '',
             r.reason || '',
         ]);
@@ -386,7 +380,6 @@ export default function SecurityTab({
                             <tr>
                                 <th style={{ width: 180 }}>Type</th>
                                 <th style={{ width: 200 }}>Pattern</th>
-                                <th style={{ width: 100 }}>Match</th>
                                 <th style={{ width: 100 }}>Risk Level</th>
                                 <th>Reason</th>
                                 {editingRules !== null && <th style={{ width: 50 }}></th>}
@@ -414,15 +407,6 @@ export default function SecurityTab({
                                             />
                                         ) : (
                                             <code className="security-rule-pattern">{rule.pattern}</code>
-                                        )}
-                                    </td>
-                                    <td>
-                                        {editingRules !== null ? (
-                                            <select value={rule.match} onChange={e => updateRule(i, 'match', e.target.value)}>
-                                                {MATCH_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                                            </select>
-                                        ) : (
-                                            <span className="security-rule-match">{rule.match}</span>
                                         )}
                                     </td>
                                     <td>

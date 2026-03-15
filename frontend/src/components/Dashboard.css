@@ -530,7 +530,7 @@
     border-bottom: 1px solid var(--border-default);
     white-space: nowrap;
     user-select: none;
-    background: #fafafa;
+    background: var(--bg-hover);
 }
 
 .dashboard__th--sortable {
@@ -651,8 +651,8 @@
 .cell__permission {
     display: inline-flex;
     padding: 2px 8px;
-    background: #f8f3fb;
-    color: #6b2fa0;
+    background: var(--bg-selected);
+    color: var(--aws-blue);
     border-radius: var(--radius-s);
     font-size: var(--font-xs);
     font-weight: 600;
