@@ -1,0 +1,405 @@
+<mxfile host="app.diagrams.net" modified="2026-03-24T00:00:00.000Z" agent="Claude Code" version="24.0.0" type="device">
+  <diagram name="AWS IAM Identity Center Dashboard" id="architecture">
+    <mxGraphModel dx="2200" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Background Groups -->
+        <!-- Ingestion Pipeline Group -->
+        <mxCell id="group_ingestion" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#43A047;strokeWidth=2;dashed=1;arcSize=8;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="560" height="520" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_ingestion_label" value="&lt;b&gt;INGESTION PIPELINE&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;fontSize=13;fontColor=#2E7D32;" vertex="1" parent="1">
+          <mxGeometry x="55" y="390" width="170" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- Data Lake Group -->
+        <mxCell id="group_datalake" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;strokeWidth=2;dashed=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="660" y="380" width="520" height="520" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_datalake_label" value="&lt;b&gt;DATA LAKE&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;fontSize=13;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="675" y="390" width="110" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- Presentation Layer Group -->
+        <mxCell id="group_presentation" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=2;dashed=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="60" width="520" height="840" as="geometry"/>
+        </mxCell>
+        <mxCell id="group_presentation_label" value="&lt;b&gt;PRESENTATION LAYER&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;fontSize=13;fontColor=#0D47A1;" vertex="1" parent="1">
+          <mxGeometry x="1255" y="70" width="190" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- USERS                -->
+        <!-- ==================== -->
+        <mxCell id="users" value="&lt;b&gt;Users / Admins&lt;/b&gt;" style="shape=mxgraph.aws4.users;outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#D45B07;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="-60" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- IDENTITY PROVIDERS   -->
+        <!-- ==================== -->
+        <mxCell id="okta" value="&lt;b&gt;Okta / Azure AD&lt;/b&gt;&lt;br&gt;(OIDC + PKCE)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.identity_and_access_management;outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#DD344C;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="-60" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- CLOUDFRONT           -->
+        <!-- ==================== -->
+        <mxCell id="cloudfront" value="&lt;b&gt;CloudFront&lt;/b&gt;&lt;br&gt;Distribution" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#8C4FFF;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;" vertex="1" parent="1">
+          <mxGeometry x="1466" y="100" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- S3 FRONTEND BUCKET   -->
+        <!-- ==================== -->
+        <mxCell id="s3_frontend" value="&lt;b&gt;S3&lt;/b&gt;&lt;br&gt;Frontend Bucket&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;React SPA&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#3F8624;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="1316" y="100" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- ATHENA PROXY LAMBDA  -->
+        <!-- ==================== -->
+        <mxCell id="athena_proxy" value="&lt;b&gt;Lambda&lt;/b&gt;&lt;br&gt;Athena Proxy&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Python 3.12 / ARM64&lt;br&gt;Function URL (AWS_IAM)&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#ED7100;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="1">
+          <mxGeometry x="1466" y="300" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- S3 CACHE BUCKET      -->
+        <!-- ==================== -->
+        <mxCell id="s3_cache" value="&lt;b&gt;S3&lt;/b&gt;&lt;br&gt;Cache Bucket&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;summary.json&lt;br&gt;ps_summary.json&lt;br&gt;TTL: 1 hour&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#3F8624;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="1316" y="300" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- ATHENA WORKGROUP     -->
+        <!-- ==================== -->
+        <mxCell id="athena" value="&lt;b&gt;Athena&lt;/b&gt;&lt;br&gt;Workgroup&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;SQL Queries&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#8C4FFF;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.athena;" vertex="1" parent="1">
+          <mxGeometry x="1466" y="530" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- S3 ATHENA RESULTS    -->
+        <!-- ==================== -->
+        <mxCell id="s3_athena_results" value="&lt;b&gt;S3&lt;/b&gt;&lt;br&gt;Athena Results&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Query output&lt;br&gt;TTL: 1 day&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#3F8624;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="530" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- EVENTBRIDGE          -->
+        <!-- ==================== -->
+        <mxCell id="eventbridge" value="&lt;b&gt;EventBridge&lt;/b&gt;&lt;br&gt;Scheduler&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;rate(6 hours)&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#E7157B;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;" vertex="1" parent="1">
+          <mxGeometry x="80" y="430" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- STEP FUNCTIONS       -->
+        <!-- ==================== -->
+        <mxCell id="stepfunctions" value="&lt;b&gt;Step Functions&lt;/b&gt;&lt;br&gt;State Machine&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;STANDARD type&lt;br&gt;Distributed Map&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#E7157B;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.step_functions;" vertex="1" parent="1">
+          <mxGeometry x="280" y="430" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- WORKER LAMBDA        -->
+        <!-- ==================== -->
+        <mxCell id="worker_lambda" value="&lt;b&gt;Lambda&lt;/b&gt;&lt;br&gt;Worker&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Python 3.12 / ARM64&lt;br&gt;1 per account (parallel)&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#ED7100;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="1">
+          <mxGeometry x="280" y="620" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- Phase labels inside Step Functions area -->
+        <mxCell id="phase_box" value="&lt;div style=&quot;text-align:left;font-size:10px;&quot;&gt;&lt;b&gt;Three Phases:&lt;/b&gt;&lt;br&gt;1. ListAccounts&lt;br&gt;2. CrawlAccounts (Distributed Map)&lt;br&gt;3. CrawlPermissionSets&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#7CB342;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="370" y="425" width="210" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- AWS ORGANIZATIONS    -->
+        <!-- ==================== -->
+        <mxCell id="organizations" value="&lt;b&gt;AWS&lt;br&gt;Organizations&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;ListAccounts&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#E7157B;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.organizations;" vertex="1" parent="1">
+          <mxGeometry x="80" y="620" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- IAM IDENTITY CENTER  -->
+        <!-- ==================== -->
+        <mxCell id="sso" value="&lt;b&gt;IAM Identity&lt;br&gt;Center (SSO)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Assignments &amp;amp;&lt;br&gt;Permission Sets&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#DD344C;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.identity_and_access_management;" vertex="1" parent="1">
+          <mxGeometry x="80" y="770" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- IDENTITY STORE       -->
+        <!-- ==================== -->
+        <mxCell id="identity_store" value="&lt;b&gt;Identity&lt;br&gt;Store&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Users &amp;amp; Groups&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#DD344C;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.identity_and_access_management;" vertex="1" parent="1">
+          <mxGeometry x="220" y="770" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- S3 INVENTORY BUCKET  -->
+        <!-- ==================== -->
+        <mxCell id="s3_inventory" value="&lt;b&gt;S3&lt;/b&gt;&lt;br&gt;Inventory Bucket&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Hive-partitioned&lt;br&gt;assignments/ &amp;amp;&lt;br&gt;permission_sets/&lt;br&gt;TTL: 7 days&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#3F8624;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="720" y="530" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- GLUE DATABASE        -->
+        <!-- ==================== -->
+        <mxCell id="glue_db" value="&lt;b&gt;Glue&lt;/b&gt;&lt;br&gt;Data Catalog&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Partition Projection&lt;br&gt;(No Crawlers)&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#8C4FFF;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.glue;" vertex="1" parent="1">
+          <mxGeometry x="920" y="430" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- Glue Tables -->
+        <mxCell id="glue_tables" value="&lt;div style=&quot;text-align:left;font-size:10px;&quot;&gt;&lt;b&gt;Glue Tables:&lt;/b&gt;&lt;br&gt;• assignments (CSV)&lt;br&gt;• permission_sets (JSON)&lt;br&gt;• cloudtrail_logs (optional)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#FFB300;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="840" y="545" width="200" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- CLOUDTRAIL (Optional)-->
+        <!-- ==================== -->
+        <mxCell id="cloudtrail" value="&lt;b&gt;CloudTrail&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;Organization Trail&lt;br&gt;(Optional)&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#E7157B;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudtrail;" vertex="1" parent="1">
+          <mxGeometry x="720" y="750" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="s3_cloudtrail" value="&lt;b&gt;S3&lt;/b&gt;&lt;br&gt;CloudTrail Logs&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;(External bucket)&lt;/font&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#3F8624;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="920" y="750" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- CLOUDWATCH           -->
+        <!-- ==================== -->
+        <mxCell id="cloudwatch" value="&lt;b&gt;CloudWatch&lt;/b&gt;&lt;br&gt;Logs" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=none;fillColor=#E7157B;labelBackgroundColor=none;align=center;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=11;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch;" vertex="1" parent="1">
+          <mxGeometry x="460" y="750" width="48" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- REACT SPA BOX        -->
+        <!-- ==================== -->
+        <mxCell id="react_spa" value="&lt;div style=&quot;text-align:left;font-size:10px;&quot;&gt;&lt;b&gt;React SPA (4 Tabs)&lt;/b&gt;&lt;br&gt;• Assignments Dashboard&lt;br&gt;• Permission Sets&lt;br&gt;• Security / Risk Assessment&lt;br&gt;• Audit Trail (CloudTrail)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="195" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- TERRAFORM BOX        -->
+        <!-- ==================== -->
+        <mxCell id="terraform_box" value="&lt;div style=&quot;text-align:center;&quot;&gt;&lt;b&gt;Deployed with Terraform&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;100% Serverless • Zero Fixed Costs&lt;br&gt;No NAT Gateways • No Glue Crawlers&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#7B1FA2;fontSize=11;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="-60" width="260" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- TITLE                -->
+        <!-- ==================== -->
+        <mxCell id="title" value="&lt;font style=&quot;font-size:20px;&quot;&gt;&lt;b&gt;AWS IAM Identity Center&lt;br&gt;Security &amp;amp; Governance Dashboard&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="560" y="-80" width="380" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================= -->
+        <!-- CONNECTIONS / ARROWS                          -->
+        <!-- ============================================= -->
+
+        <!-- Users → CloudFront -->
+        <mxCell id="edge_users_cf" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1565C0;strokeWidth=2;fontSize=10;" edge="1" source="users" target="cloudfront" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_users_cf_label" value="HTTPS" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#1565C0;" vertex="1" connectable="0" parent="edge_users_cf">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Users ↔ Okta -->
+        <mxCell id="edge_users_okta" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#C62828;strokeWidth=1;dashed=1;fontSize=10;" edge="1" source="users" target="okta" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_users_okta_label" value="OIDC" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#C62828;" vertex="1" connectable="0" parent="edge_users_okta">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- CloudFront → S3 Frontend (OAC) -->
+        <mxCell id="edge_cf_s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;" edge="1" source="cloudfront" target="s3_frontend" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_cf_s3_label" value="OAC / SigV4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#2E7D32;" vertex="1" connectable="0" parent="edge_cf_s3">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- CloudFront → Athena Proxy (/api*) -->
+        <mxCell id="edge_cf_api" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E65100;strokeWidth=2;fontSize=10;" edge="1" source="cloudfront" target="athena_proxy" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_cf_api_label" value="/api* → OAC" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#E65100;" vertex="1" connectable="0" parent="edge_cf_api">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Athena Proxy → S3 Cache -->
+        <mxCell id="edge_proxy_cache" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E7D32;strokeWidth=1;fontSize=10;" edge="1" source="athena_proxy" target="s3_cache" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_proxy_cache_label" value="Cache-first" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#2E7D32;" vertex="1" connectable="0" parent="edge_proxy_cache">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Athena Proxy → Athena (SQL fallback) -->
+        <mxCell id="edge_proxy_athena" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6A1B9A;strokeWidth=2;fontSize=10;" edge="1" source="athena_proxy" target="athena" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_proxy_athena_label" value="SQL fallback" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#6A1B9A;" vertex="1" connectable="0" parent="edge_proxy_athena">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Athena → S3 Athena Results -->
+        <mxCell id="edge_athena_results" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E7D32;strokeWidth=1;fontSize=10;" edge="1" source="athena" target="s3_athena_results" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Athena → Glue (metadata) -->
+        <mxCell id="edge_athena_glue" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6A1B9A;strokeWidth=2;fontSize=10;" edge="1" source="athena" target="glue_db" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1490" y="700"/>
+              <mxPoint x="1100" y="700"/>
+              <mxPoint x="1100" y="454"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_athena_glue_label" value="Query metadata" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#6A1B9A;" vertex="1" connectable="0" parent="edge_athena_glue">
+          <mxGeometry x="-0.3" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Glue → S3 Inventory -->
+        <mxCell id="edge_glue_s3inv" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E7D32;strokeWidth=1;dashed=1;fontSize=10;" edge="1" source="glue_db" target="s3_inventory" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_glue_s3inv_label" value="Points to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#558B2F;" vertex="1" connectable="0" parent="edge_glue_s3inv">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Glue → S3 CloudTrail -->
+        <mxCell id="edge_glue_ct" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E7D32;strokeWidth=1;dashed=1;fontSize=10;" edge="1" source="glue_db" target="s3_cloudtrail" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- CloudTrail → S3 CloudTrail -->
+        <mxCell id="edge_ct_s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#C62828;strokeWidth=1;dashed=1;fontSize=10;" edge="1" source="cloudtrail" target="s3_cloudtrail" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- EventBridge → Step Functions -->
+        <mxCell id="edge_eb_sfn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#AD1457;strokeWidth=2;fontSize=10;" edge="1" source="eventbridge" target="stepfunctions" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_eb_sfn_label" value="StartExecution" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#AD1457;" vertex="1" connectable="0" parent="edge_eb_sfn">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Step Functions → Worker Lambda -->
+        <mxCell id="edge_sfn_worker" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E65100;strokeWidth=2;fontSize=10;" edge="1" source="stepfunctions" target="worker_lambda" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_sfn_worker_label" value="Invoke&lt;br&gt;(max 10 concurrent)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=0;fontColor=#E65100;" vertex="1" connectable="0" parent="edge_sfn_worker">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Worker → Organizations -->
+        <mxCell id="edge_worker_orgs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#AD1457;strokeWidth=1;fontSize=10;" edge="1" source="worker_lambda" target="organizations" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker → SSO -->
+        <mxCell id="edge_worker_sso" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#C62828;strokeWidth=1;fontSize=10;" edge="1" source="worker_lambda" target="sso" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="304" y="740"/>
+              <mxPoint x="155" y="740"/>
+              <mxPoint x="155" y="794"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Worker → Identity Store -->
+        <mxCell id="edge_worker_ids" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#C62828;strokeWidth=1;fontSize=10;" edge="1" source="worker_lambda" target="identity_store" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker → S3 Inventory -->
+        <mxCell id="edge_worker_s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;" edge="1" source="worker_lambda" target="s3_inventory" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="644"/>
+              <mxPoint x="500" y="554"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_worker_s3_label" value="Write CSV/JSON" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#2E7D32;" vertex="1" connectable="0" parent="edge_worker_s3">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Worker → CloudWatch -->
+        <mxCell id="edge_worker_cw" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#757575;strokeWidth=1;dashed=1;fontSize=10;" edge="1" source="worker_lambda" target="cloudwatch" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== -->
+        <!-- LEGEND               -->
+        <!-- ==================== -->
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#BDBDBD;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="260" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="55" y="105" width="80" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_l1" value="" style="endArrow=classic;html=1;strokeColor=#1565C0;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="60" y="150" as="sourcePoint"/>
+            <mxPoint x="120" y="150" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_l1_text" value="User traffic" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="130" y="140" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_l2" value="" style="endArrow=classic;html=1;strokeColor=#E65100;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="60" y="175" as="sourcePoint"/>
+            <mxPoint x="120" y="175" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_l2_text" value="Compute invocation" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="130" y="165" width="130" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_l3" value="" style="endArrow=classic;html=1;strokeColor=#2E7D32;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="60" y="200" as="sourcePoint"/>
+            <mxPoint x="120" y="200" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_l3_text" value="Data flow (S3)" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="130" y="190" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_l4" value="" style="endArrow=classic;html=1;strokeColor=#6A1B9A;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="60" y="225" as="sourcePoint"/>
+            <mxPoint x="120" y="225" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_l4_text" value="Query / Analytics" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="130" y="215" width="110" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_l5" value="" style="endArrow=classic;html=1;strokeColor=#C62828;strokeWidth=1;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="60" y="250" as="sourcePoint"/>
+            <mxPoint x="120" y="250" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_l5_text" value="Auth / Optional" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="130" y="240" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_l6" value="" style="endArrow=classic;html=1;strokeColor=#AD1457;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="60" y="275" as="sourcePoint"/>
+            <mxPoint x="120" y="275" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_l6_text" value="Orchestration" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="130" y="265" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
