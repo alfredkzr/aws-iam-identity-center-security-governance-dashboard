@@ -223,11 +223,18 @@ function AppContent() {
                 setRiskSource('default');
                 return;
             }
-            const response = await apiFetch(`${API_ENDPOINT}?type=save_risk_policies`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(policies),
-            });
+            // Gzip + base64 encode to fit within CloudFront query string limits
+            const jsonBytes = new TextEncoder().encode(JSON.stringify(policies));
+            const cs = new CompressionStream('gzip');
+            const writer = cs.writable.getWriter();
+            writer.write(jsonBytes);
+            writer.close();
+            const compressedBuf = await new Response(cs.readable).arrayBuffer();
+            const compressedArr = new Uint8Array(compressedBuf);
+            let binary = '';
+            for (let i = 0; i < compressedArr.length; i++) binary += String.fromCharCode(compressedArr[i]);
+            const encodedData = btoa(binary);
+            const response = await apiFetch(`${API_ENDPOINT}?type=save_risk_policies&data=${encodeURIComponent(encodedData)}`);
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.error || 'Failed to save');

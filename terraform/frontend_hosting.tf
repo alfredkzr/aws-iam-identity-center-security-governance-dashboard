@@ -29,6 +29,34 @@ resource "aws_s3_bucket_public_access_block" "frontend_pab" {
 }
 
 # -----------------------------------------------------------------------------
+# CloudFront policies for Lambda Function URL origin
+# -----------------------------------------------------------------------------
+
+data "aws_cloudfront_cache_policy" "caching_disabled" {
+  name = "Managed-CachingDisabled"
+}
+
+resource "aws_cloudfront_origin_request_policy" "api_origin" {
+  name    = "${var.resource_prefix}-api-origin-policy"
+  comment = "Forward only required headers and all query strings to Lambda"
+
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = ["content-type", "x-api-key", "x-auth-token"]
+    }
+  }
+
+  cookies_config {
+    cookie_behavior = "none"
+  }
+
+  query_strings_config {
+    query_string_behavior = "all"
+  }
+}
+
+# -----------------------------------------------------------------------------
 # CloudFront Origin Access Control — secure S3 access
 # -----------------------------------------------------------------------------
 
@@ -108,19 +136,10 @@ resource "aws_cloudfront_distribution" "frontend" {
     target_origin_id       = "Lambda-${aws_lambda_function.athena_proxy.function_name}"
     viewer_protocol_policy = "redirect-to-https"
 
-    forwarded_values {
-      query_string = true
-      headers      = ["content-type", "x-api-key", "x-auth-token"]
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.api_origin.id
 
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
-    compress    = true
+    compress = true
   }
 
   default_cache_behavior {

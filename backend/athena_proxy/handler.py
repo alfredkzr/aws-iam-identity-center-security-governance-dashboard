@@ -741,12 +741,30 @@ def _handle_get_risk_policies():
 def _handle_save_risk_policies(event):
     """Save risk-policies.json to S3."""
     try:
-        # Parse request body
-        body = event.get("body", "")
-        if isinstance(body, str):
-            policies = json.loads(body)
+        # Parse from gzip+base64-encoded query parameter (avoids CloudFront OAC POST signing issues)
+        import base64
+        import gzip
+        params = event.get("queryStringParameters") or {}
+        encoded_data = params.get("data", "")
+        if encoded_data:
+            if len(encoded_data) > 20000:
+                return _response(400, {"error": "Payload too large (max 20KB encoded)"})
+            raw = base64.b64decode(encoded_data)
+            # Try gzip decompression first, fall back to plain UTF-8
+            try:
+                decoded = gzip.decompress(raw).decode("utf-8")
+            except (OSError, gzip.BadGzipFile):
+                decoded = raw.decode("utf-8")
+            if len(decoded) > 500000:
+                return _response(400, {"error": "Decompressed payload too large (max 500KB)"})
+            policies = json.loads(decoded)
         else:
-            policies = body
+            # Fallback: parse request body (for direct Lambda invocation)
+            body = event.get("body", "")
+            if isinstance(body, str):
+                policies = json.loads(body)
+            else:
+                policies = body
 
         # Validate schema
         if not isinstance(policies, dict):
@@ -837,6 +855,20 @@ def _handle_change_history(event):
         raise RuntimeError(f"Athena query failed: {reason}")
 
     results = _fetch_results(query_execution_id)
+
+    # Deduplicate: Organization CloudTrail logs SSO events in multiple accounts,
+    # producing duplicates with different eventids but same event/time/params.
+    # Keep the row with the real actor (non-empty actor_arn).
+    seen = {}
+    for row in results:
+        dedup_key = (row.get("eventname", ""), row.get("eventtime", ""), row.get("requestparameters", ""))
+        existing = seen.get(dedup_key)
+        if existing is None:
+            seen[dedup_key] = row
+        elif row.get("actor_arn") and not existing.get("actor_arn"):
+            seen[dedup_key] = row
+    results = list(seen.values())
+    results.sort(key=lambda r: r.get("eventtime", ""), reverse=True)
 
     # Build lookup maps from existing S3 inventory data
     lookups = _build_audit_lookups()
